@@ -3,6 +3,7 @@ import {
   BrowserRouter as Router,
   Switch,
   Route,
+  Navigate,
 } from "react-router-dom";
 
 import { HomePage } from "./pages/home_page.js";

@@ -12,6 +12,7 @@ import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import axios from 'axios';
+import { useHistory } from "react-router-dom";
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 
 const apiUrl = 'http://localhost:8080/login';
@@ -34,28 +35,35 @@ function Copyright(props) {
 const defaultTheme = createTheme();
 
 export function LoginPage() {
+  const history = useHistory();
   const handleSubmit = (event) => {
-    event.preventDefault();
-    const data = new FormData(event.currentTarget);
-    // console.log({
-    //   email: data.get('email'),
-    //   password: data.get('password'),
-    // });
-    axios.post(apiUrl, {
-        "email" : data.get('email'),
-        "password": data.get('password'),
-    })
-  .then((response) => {
-    // Handle successful response
-    console.log('Response:', response.data);
-    // Work with the response data here
-  })
-  .catch((error) => {
-    // Handle error
-    console.error('Error:', error);
-    // Handle error scenarios here
-  });
+  //   event.preventDefault();
+  //   const data = new FormData(event.currentTarget);
+  //   // console.log({
+  //   //   email: data.get('email'),
+  //   //   password: data.get('password'),
+  //   // });
+  //   axios.post(apiUrl, {
+  //       "email" : data.get('email'),
+  //       "password": data.get('password'),
+  //   })
+  // .then((response) => {
+  //   // Handle successful response
+  //   console.log('Response:', response.data);
+  //   history.push("/dashboard");
+  //   // Work with the response data here
+  // })
+  // .catch((error) => {
+  //   // Handle error
+  //   console.error('Error:', error);
+  //   // Handle error scenarios here
+  // });
+  history.push("/dashboard");
   };
+
+  const redirect = () => {
+    
+  }
 
   return (
     <ThemeProvider theme={defaultTheme}>
@@ -115,8 +123,9 @@ export function LoginPage() {
                 </Link>
               </Grid>
               <Grid item>
-                <Link href="#" variant="body2">
+                <Link href="/register" variant="body2">
                   {"Don't have an account? Sign Up"}
+
                 </Link>
               </Grid>
             </Grid>
