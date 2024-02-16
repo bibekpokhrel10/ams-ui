@@ -7,9 +7,10 @@ import {
 } from "react-router-dom";
 
 import { HomePage } from "./pages/home_page.js";
-import { LoginPage } from "./pages/login_page.js";
+
 import { RegisterPage } from "./pages/register_page.js";
 import { DashBoard } from "./pages/dashboard.js";
+import { LoginPage } from "./pages/login_page.js";
 
 export default function App() {
   return (

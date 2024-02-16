@@ -13,7 +13,10 @@ import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { DashBoard } from './dashboard';
-import axios from 'axios';
+import { useDispatch, useSelector } from "react-redux";
+import  { useEffect, useState } from "react";
+import { registerAPI } from '../action/auth';
+import { useHistory } from "react-router-dom";
 
 const apiUrl = 'http://localhost:8080/register';
 
@@ -35,28 +38,18 @@ function Copyright(props) {
 const defaultTheme = createTheme();
 
 export function RegisterPage() {
+  const dispatch = useDispatch();
+  const history = useHistory();
+  const [err, setErr] = useState(false);
   const handleSubmit = (event) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
-    // console.log({
-    //   email: data.get('email'),
-    //   password: data.get('password'),
-    // });
-    axios.post(apiUrl, {
-        "name" : data.get('firstName'),
-        "email" : data.get('email'),
-        "password": data.get('password'),
-    })
-  .then((response) => {
-    // Handle successful response
-    console.log('Response:', response.data);
-    // Work with the response data here
-  })
-  .catch((error) => {
-    // Handle error
-    console.error('Error:', error);
-    // Handle error scenarios here
-  });
+    const registerUserPayload = {
+        name : data.get('firstName'),
+        email : data.get('email'),
+        password: data.get('password'),
+    };
+  dispatch(registerAPI(registerUserPayload));
   };
 
   return (

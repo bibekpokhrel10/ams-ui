@@ -1,8 +1,11 @@
 import * as React from 'react';
+import  { useEffect, useState } from "react";
+import { auth, loginAPI } from "../action/auth";
 import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
 import CssBaseline from '@mui/material/CssBaseline';
 import TextField from '@mui/material/TextField';
+import { useDispatch, useSelector } from "react-redux";
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Checkbox from '@mui/material/Checkbox';
 import Link from '@mui/material/Link';
@@ -15,7 +18,6 @@ import axios from 'axios';
 import { useHistory } from "react-router-dom";
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 
-const apiUrl = 'http://localhost:8080/login';
 
 function Copyright(props) {
   return (
@@ -35,36 +37,25 @@ function Copyright(props) {
 const defaultTheme = createTheme();
 
 export function LoginPage() {
+  const dispatch = useDispatch();
+  const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
+  console.log("authentication :: ", isAuthenticated)
   const history = useHistory();
+  const [err, setErr] = useState(false);
   const handleSubmit = (event) => {
-  //   event.preventDefault();
-  //   const data = new FormData(event.currentTarget);
-  //   // console.log({
-  //   //   email: data.get('email'),
-  //   //   password: data.get('password'),
-  //   // });
-  //   axios.post(apiUrl, {
-  //       "email" : data.get('email'),
-  //       "password": data.get('password'),
-  //   })
-  // .then((response) => {
-  //   // Handle successful response
-  //   console.log('Response:', response.data);
-  //   history.push("/dashboard");
-  //   // Work with the response data here
-  // })
-  // .catch((error) => {
-  //   // Handle error
-  //   console.error('Error:', error);
-  //   // Handle error scenarios here
-  // });
-  history.push("/dashboard");
+    event.preventDefault();
+    const data = new FormData(event.currentTarget);
+    const loginUserPayload = {
+        email : data.get('email'),
+        password: data.get('password'),
+    };
+  dispatch(loginAPI(loginUserPayload));
   };
-
-  const redirect = () => {
-    
+  if (isAuthenticated){
+    history.push("/dashboard");
+  }else{
+    history.push("/login")
   }
-
   return (
     <ThemeProvider theme={defaultTheme}>
       <Container component="main" maxWidth="xs">
