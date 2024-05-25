@@ -1,23 +1,17 @@
 import * as types from "../constant/actionTypes";
 
 const INITIAL_STATE = {
-  // isAuthenticated: localStorage.getItem("token") ? "true" : "",
-  isAuthenticated: "",
-  selectLanguage: "",
+  isAuthenticated: localStorage.getItem("token") ? "true" : "",
 };
+
 function Auth(state = INITIAL_STATE, action) {
   const { type, payload } = action;
+  console.log("payload", payload);
   switch (type) {
-    // case types.IS_AUTH:
-    //   payload
-    //     ? localStorage.setItem("token", payload)
-    //     : localStorage.removeItem("token");
-    //   return { ...state, isAuthenticated: payload };
     case types.IS_AUTH:
-      console.log("this is action :: ",action.payload)
       return {
         ...state,
-        isAuthenticated: payload.data.token,
+        isAuthenticated: payload.data.token || "",
       };
     default:
       return state;

@@ -15,7 +15,7 @@ import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import axios from 'axios';
-import { useHistory } from "react-router-dom";
+import {useNavigate} from "react-router-dom";
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 
 
@@ -40,7 +40,7 @@ export function LoginPage() {
   const dispatch = useDispatch();
   const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
   console.log("authentication :: ", isAuthenticated)
-  const history = useHistory();
+  const navigate = useNavigate();
   const [err, setErr] = useState(false);
   const handleSubmit = (event) => {
     event.preventDefault();
@@ -52,9 +52,9 @@ export function LoginPage() {
   dispatch(loginAPI(loginUserPayload));
   };
   if (isAuthenticated){
-    history.push("/dashboard");
+    navigate("/dashboard");
   }else{
-    history.push("/login")
+    navigate("/")
   }
   return (
     <ThemeProvider theme={defaultTheme}>

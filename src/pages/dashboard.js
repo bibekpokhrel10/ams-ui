@@ -4,7 +4,7 @@ import { PrimarySearchAppBar } from "../components/appbar/appbar";
 import { PersistentDrawerLeft } from "../components/drawer/drawer";
 import { AppBar } from "@mui/material";
 
-export const DashBoard = () => {
+export const Dashboard = () => {
     return <div>
        <PersistentDrawerLeft/>
     </div>

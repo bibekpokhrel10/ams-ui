@@ -17,6 +17,7 @@ import { useDispatch, useSelector } from "react-redux";
 import  { useEffect, useState } from "react";
 import { registerAPI } from '../action/auth';
 import { useHistory } from "react-router-dom";
+import { FormControl, InputLabel, Select, MenuItem } from '@mui/material';
 
 const apiUrl = 'http://localhost:8080/register';
 
@@ -48,6 +49,7 @@ export function RegisterPage() {
         name : data.get('firstName'),
         email : data.get('email'),
         password: data.get('password'),
+        user_type: data.get('usertype'),
     };
   dispatch(registerAPI(registerUserPayload));
   };
@@ -103,6 +105,22 @@ export function RegisterPage() {
                   id="password"
                   autoComplete="new-password"
                 />
+              </Grid>
+              <Grid item xs={12}>
+                <FormControl fullWidth required>
+                  <InputLabel id="usertype-label">User Type</InputLabel>
+                  <Select 
+      labelId="usertype-label"
+      id="usertype"
+      label="User Type"
+      name="usertype"
+    >
+      {/* Add options for the dropdown here */}
+      <MenuItem value="teacher">teacher</MenuItem>
+      <MenuItem value="student">student</MenuItem>
+      {/* Add more options as needed */}
+    </Select>
+  </FormControl>
               </Grid>
               <Grid item xs={12}>
                 <FormControlLabel
