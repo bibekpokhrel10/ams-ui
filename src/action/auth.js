@@ -23,10 +23,11 @@ export const handleChangeLanguage = (language) => (dispatch) => {
 
 
 export const loginAPI = (loginUserPayload) => async (dispatch) => {
+  console.log("this is loginUserPayload :: ",loginUserPayload)
   try {
     const response = await userLogin(loginUserPayload);
     dispatch(getAuth(response.data));
-    console.log("this is response :: ",response)
+    return response
   } catch (error) {
     console.log("error");
   }
@@ -35,7 +36,7 @@ export const loginAPI = (loginUserPayload) => async (dispatch) => {
 export const registerAPI = (registerUserPayload) => async (dispatch) => {
   try {
     const response = await registerUser(registerUserPayload);
-    console.log("this is response :: ",response)
+    return response
   } catch (error) {
     console.log("error");
   }
