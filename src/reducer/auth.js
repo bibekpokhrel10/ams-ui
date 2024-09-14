@@ -1,21 +1,23 @@
 import * as types from "../constant/actionTypes";
 
-const INITIAL_STATE = {
-  isAuthenticated: localStorage.getItem("token") ? "true" : "",
+const initialState = {
+  token: null,
+  isAuthenticated: false,
 };
 
-function Auth(state = INITIAL_STATE, action) {
-  const { type, payload } = action;
-  console.log("payload", payload);
-  switch (type) {
+const Auth = (state = initialState, action) => {
+  switch (action.type) {
     case types.IS_AUTH:
       return {
         ...state,
-        isAuthenticated: payload.data.token || "",
+        token: action.payload.data.token,
+        isAuthenticated: true,
+        role: action.payload.data.role,
       };
+    // Add other cases as needed
     default:
       return state;
   }
-}
+};
 
 export default Auth;

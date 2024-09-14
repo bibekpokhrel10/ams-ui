@@ -1,92 +1,122 @@
 import * as React from 'react';
-import { styled, alpha } from '@mui/material/styles';
+import { useDispatch, useSelector } from 'react-redux';
+import { styled } from '@mui/material/styles';
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
 import Toolbar from '@mui/material/Toolbar';
 import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
-import InputBase from '@mui/material/InputBase';
-import Badge from '@mui/material/Badge';
 import MenuItem from '@mui/material/MenuItem';
 import Menu from '@mui/material/Menu';
-import MoreIcon from '@mui/icons-material/MoreVert';
-import SearchIcon from '@mui/icons-material/Search';
 import AccountCircle from '@mui/icons-material/AccountCircle';
-import MailIcon from '@mui/icons-material/Mail';
 import NotificationsIcon from '@mui/icons-material/Notifications';
+import Badge from '@mui/material/Badge';
 import Drawer from '@mui/material/Drawer';
-import Divider from '@mui/material/Divider';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import InboxIcon from '@mui/icons-material/MoveToInbox';
-import { useNavigate } from 'react-router-dom';
+import DashboardIcon from '@mui/icons-material/Dashboard';
+import BusinessIcon from '@mui/icons-material/Business';
+import PeopleIcon from '@mui/icons-material/People';
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import DialogActions from '@mui/material/DialogActions';
+import Button from '@mui/material/Button';
+import { useNavigate, useLocation } from 'react-router-dom';
+import {  logout } from '../../action/auth';
+import { fetchUserProfile } from '../../action/user';
+import {fetchNotifications, readNotification } from '../../action/notification';
 
-const drawerWidth = 240;
+const drawerWidth = 120;
 
-const Search = styled('div')(({ theme }) => ({
-  position: 'relative',
-  borderRadius: theme.shape.borderRadius,
-  backgroundColor: alpha(theme.palette.common.white, 0.15),
-  '&:hover': {
-    backgroundColor: alpha(theme.palette.common.white, 0.25),
-  },
-  marginRight: theme.spacing(2),
-  marginLeft: 0,
-  width: '100%',
-  [theme.breakpoints.up('sm')]: {
-    marginLeft: theme.spacing(3),
-    width: 'auto',
-  },
+const StyledAppBar = styled(AppBar)(({ theme }) => ({
+  background: 'linear-gradient(to right, #A6539C, #7E3F76)',
 }));
 
-const SearchIconWrapper = styled('div')(({ theme }) => ({
-  padding: theme.spacing(0, 2),
-  height: '100%',
-  position: 'absolute',
-  pointerEvents: 'none',
-  display: 'flex',
-  alignItems: 'center',
+const StyledListItemButton = styled(ListItemButton)(({ theme, selected }) => ({
+  minHeight: 80,
   justifyContent: 'center',
+  alignItems: 'center',
+  flexDirection: 'column',
+  width: '100%',
+  color: 'white',
+  backgroundColor: selected ? 'rgba(255, 255, 255, 0.2)' : 'transparent',
+  '&:hover': {
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  padding: theme.spacing(1),
 }));
 
-const StyledInputBase = styled(InputBase)(({ theme }) => ({
-  color: 'inherit',
-  '& .MuiInputBase-input': {
-    padding: theme.spacing(1, 1, 1, 0),
-    paddingLeft: `calc(1em + ${theme.spacing(4)})`,
-    transition: theme.transitions.create('width'),
-    width: '100%',
-    [theme.breakpoints.up('md')]: {
-      width: '20ch',
-    },
+const StyledListItemIcon = styled(ListItemIcon)({
+  minWidth: 0,
+  justifyContent: 'center',
+  color: 'white',
+  fontSize: '2rem',
+  marginBottom: '4px',
+});
+
+const StyledListItemText = styled(ListItemText)({
+  '& .MuiListItemText-primary': {
+    fontSize: '0.8rem',
+    fontWeight: 'bold',
+    textAlign: 'center',
+    color: 'white',
   },
-}));
+});
 
 export function PrimarySearchAppBar(props) {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const location = useLocation();
+
   const [anchorEl, setAnchorEl] = React.useState(null);
-  const [mobileMoreAnchorEl, setMobileMoreAnchorEl] = React.useState(null);
+  const [notificationAnchorEl, setNotificationAnchorEl] = React.useState(null);
+  const [openProfileDialog, setOpenProfileDialog] = React.useState(false);
+
+  const user = useSelector(state => state.user.profile);
+  const notifications = useSelector(state => state.user.notifications);
 
   const isMenuOpen = Boolean(anchorEl);
-  const isMobileMenuOpen = Boolean(mobileMoreAnchorEl);
+  const isNotificationMenuOpen = Boolean(notificationAnchorEl);
+
+  React.useEffect(() => {
+    dispatch(fetchUserProfile());
+    dispatch(fetchNotifications());
+    // const intervalId = setInterval(() => {
+    //   dispatch(fetchNotifications());
+    // }, 5000);
+
+    // return () => clearInterval(intervalId);
+  }, [dispatch]);
 
   const handleProfileMenuOpen = (event) => {
     setAnchorEl(event.currentTarget);
   };
 
-  const handleMobileMenuClose = () => {
-    setMobileMoreAnchorEl(null);
+  const handleNotificationMenuOpen = (event) => {
+    setNotificationAnchorEl(event.currentTarget);
   };
 
   const handleMenuClose = () => {
     setAnchorEl(null);
-    handleMobileMenuClose();
+    setNotificationAnchorEl(null);
   };
 
-  const handleMobileMenuOpen = (event) => {
-    setMobileMoreAnchorEl(event.currentTarget);
+  const handleLogout = () => {
+    dispatch(logout());
+    navigate('/login');
+  };
+
+  const handleNotificationClick = (notificationId) => {
+    dispatch(readNotification(notificationId));
+  };
+
+  const handleProfileClick = () => {
+    setOpenProfileDialog(true);
+    handleMenuClose();
   };
 
   const menuId = 'primary-search-account-menu';
@@ -106,187 +136,143 @@ export function PrimarySearchAppBar(props) {
       open={isMenuOpen}
       onClose={handleMenuClose}
     >
-      <MenuItem onClick={handleMenuClose}>Profile</MenuItem>
-      <MenuItem onClick={handleMenuClose}>My account</MenuItem>
+      <MenuItem onClick={handleProfileClick}>Profile</MenuItem>
+      <MenuItem onClick={handleLogout}>Logout</MenuItem>
     </Menu>
   );
 
-  const mobileMenuId = 'primary-search-account-menu-mobile';
-  const renderMobileMenu = (
+  const notificationMenuId = 'primary-search-notification-menu';
+  const renderNotificationMenu = (
     <Menu
-      anchorEl={mobileMoreAnchorEl}
+      anchorEl={notificationAnchorEl}
       anchorOrigin={{
         vertical: 'top',
         horizontal: 'right',
       }}
-      id={mobileMenuId}
+      id={notificationMenuId}
       keepMounted
       transformOrigin={{
         vertical: 'top',
         horizontal: 'right',
       }}
-      open={isMobileMenuOpen}
-      onClose={handleMobileMenuClose}
+      open={isNotificationMenuOpen}
+      onClose={handleMenuClose}
     >
-      <MenuItem>
-        <IconButton size="large" aria-label="show 4 new mails" color="inherit">
-          <Badge badgeContent={4} color="error">
-            <MailIcon />
-          </Badge>
-        </IconButton>
-        <p>Messages</p>
-      </MenuItem>
-      <MenuItem>
-        <IconButton
-          size="large"
-          aria-label="show 17 new notifications"
-          color="inherit"
+      {notifications.map((notification) => (
+        <MenuItem 
+          key={notification.id} 
+          onClick={() => handleNotificationClick(notification.id)}
+          style={{ backgroundColor: notification.read ? 'white' : '#f0f0f0' }}
         >
-          <Badge badgeContent={17} color="error">
-            <NotificationsIcon />
-          </Badge>
-        </IconButton>
-        <p>Notifications</p>
-      </MenuItem>
-      <MenuItem onClick={handleProfileMenuOpen}>
-        <IconButton
-          size="large"
-          aria-label="account of current user"
-          aria-controls="primary-search-account-menu"
-          aria-haspopup="true"
-          color="inherit"
-        >
-          <AccountCircle />
-        </IconButton>
-        <p>Profile</p>
-      </MenuItem>
+          {notification.message}
+        </MenuItem>
+      ))}
     </Menu>
   );
 
-
-  const navigate = useNavigate();
-
   const handleListItemClick = (text) => {
-    // Define the routes based on the clicked item
     const routes = {
-      'Inbox': '/dashboard',
-      'Starred': '/starred',
-      'Send email': '/send-email',
-      'Drafts': '/drafts',
+      'Dashboard': '/dashboard',
+      'Institution': '/institution',
+      'Users': '/users',
     };
-
-    // Navigate to the corresponding route
     navigate(routes[text]);
   };
-  
 
   return (
     <Box sx={{ display: 'flex' }}>
-      <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
+      <StyledAppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
         <Toolbar>
-          <Typography
-            variant="h6"
-            noWrap
-            component="div"
-            sx={{ display: { xs: 'none', sm: 'block' } }}
-          >
+          <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
             MUI
           </Typography>
-          <Search>
-            <SearchIconWrapper>
-              <SearchIcon />
-            </SearchIconWrapper>
-            <StyledInputBase
-              placeholder="Search…"
-              inputProps={{ 'aria-label': 'search' }}
-            />
-          </Search>
-          <Box sx={{ flexGrow: 1 }} />
-          <Box sx={{ display: { xs: 'none', md: 'flex' } }}>
-            <IconButton size="large" aria-label="show 4 new mails" color="inherit">
-              <Badge badgeContent={4} color="error">
-                <MailIcon />
-              </Badge>
-            </IconButton>
-            <IconButton
-              size="large"
-              aria-label="show 17 new notifications"
-              color="inherit"
-            >
-              <Badge badgeContent={17} color="error">
-                <NotificationsIcon />
-              </Badge>
-            </IconButton>
-            <IconButton
-              size="large"
-              edge="end"
-              aria-label="account of current user"
-              aria-controls={menuId}
-              aria-haspopup="true"
-              onClick={handleProfileMenuOpen}
-              color="inherit"
-            >
-              <AccountCircle />
-            </IconButton>
-          </Box>
-          <Box sx={{ display: { xs: 'flex', md: 'none' } }}>
-            <IconButton
-              size="large"
-              aria-label="show more"
-              aria-controls={mobileMenuId}
-              aria-haspopup="true"
-              onClick={handleMobileMenuOpen}
-              color="inherit"
-            >
-              <MoreIcon />
-            </IconButton>
-          </Box>
+          <IconButton
+            size="large"
+            aria-label="show new notifications"
+            color="inherit"
+            onClick={handleNotificationMenuOpen}
+            sx={{ mr: 2 }}
+          >
+            <Badge badgeContent={notifications.filter(n => !n.read).length} color="error">
+              <NotificationsIcon />
+            </Badge>
+          </IconButton>
+          <Typography variant="subtitle1" sx={{ mr: 2 }}>
+            {user.name}
+          </Typography>
+          <IconButton
+            size="large"
+            edge="end"
+            aria-label="account of current user"
+            aria-controls={menuId}
+            aria-haspopup="true"
+            onClick={handleProfileMenuOpen}
+            color="inherit"
+          >
+            <AccountCircle />
+          </IconButton>
         </Toolbar>
-      </AppBar>
+      </StyledAppBar>
       <Drawer
         variant="permanent"
         sx={{
           width: drawerWidth,
           flexShrink: 0,
-          [`& .MuiDrawer-paper`]: { width: drawerWidth, boxSizing: 'border-box' },
+          [`& .MuiDrawer-paper`]: { 
+            width: drawerWidth, 
+            boxSizing: 'border-box',
+            alignItems: 'center',
+            background: 'linear-gradient(to bottom, #A6539C, #7E3F76)',
+            paddingTop: '10px',
+          },
         }}
       >
         <Toolbar />
-        <Box sx={{ overflow: 'auto' }}>
-        <List>
-      {['Inbox', 'Starred', 'Send email', 'Drafts'].map((text, index) => (
-        <ListItem key={text} disablePadding>
-          <ListItemButton onClick={() => handleListItemClick(text)}>
-            <ListItemIcon>
-              {index % 2 === 0 ? <InboxIcon /> : <MailIcon />}
-            </ListItemIcon>
-            <ListItemText primary={text} />
-          </ListItemButton>
-        </ListItem>
-      ))}
-    </List>
-          <Divider />
+        <Box sx={{ overflow: 'auto', width: '100%' }}>
           <List>
-            {['All mail', 'Trash', 'Spam'].map((text, index) => (
-              <ListItem key={text} disablePadding>
-                <ListItemButton>
-                  <ListItemIcon>
-                    {index % 2 === 0 ? <InboxIcon /> : <MailIcon />}
-                  </ListItemIcon>
-                  <ListItemText primary={text} />
-                </ListItemButton>
+            {[
+              { text: 'Dashboard', icon: <DashboardIcon fontSize="large" />, path: '/dashboard' },
+              { text: 'Institution', icon: <BusinessIcon fontSize="large" />, path: '/institution' },
+              user.role === 'admin' || user.role === 'institution_admin' ? { text: 'Users', icon: <PeopleIcon fontSize="large" />, path: '/users' } : null,
+            ].filter(Boolean).map((item) => (
+              <ListItem key={item.text} disablePadding>
+                <StyledListItemButton
+                  onClick={() => handleListItemClick(item.text)}
+                  selected={location.pathname === item.path}
+                >
+                  <StyledListItemIcon>
+                    {item.icon}
+                  </StyledListItemIcon>
+                  <StyledListItemText primary={item.text} />
+                </StyledListItemButton>
               </ListItem>
             ))}
           </List>
         </Box>
       </Drawer>
-      <Box component="main" sx={{ flexGrow: 1, p: 1 }}>
+      <Box component="main" sx={{ flexGrow: 1, p: 1, width: `calc(100% - ${drawerWidth}px)` }}>
         <Toolbar />
-        {/* Main content goes here */}
         {props.children}
       </Box>
-      {renderMobileMenu}
       {renderMenu}
+      {renderNotificationMenu}
+      <ProfileDialog open={openProfileDialog} onClose={() => setOpenProfileDialog(false)} user={user} />
     </Box>
   );
 }
+
+const ProfileDialog = ({ open, onClose, user }) => {
+  return (
+    <Dialog open={open} onClose={onClose}>
+      <DialogTitle>User Profile</DialogTitle>
+      <DialogContent>
+        <Typography variant="body1">Name: {user.firstName} {user.lastName}</Typography>
+        <Typography variant="body1">Email: {user.email}</Typography>
+        {/* Add more user details as needed */}
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={onClose}>Close</Button>
+      </DialogActions>
+    </Dialog>
+  );
+};

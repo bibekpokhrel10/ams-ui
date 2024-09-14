@@ -1,5 +1,6 @@
+import { getLinearProgressUtilityClass } from "@mui/material";
 import * as types from "../constant/actionTypes";
-import { registerUser, userLogin } from "../services/apiCall";
+import { registerUser, userLogin, getUserProfile, getNotifications, markNotificationAsRead, getUsers,  updateUserPasswordAPI, updateUserprofileAPI} from "../services/apiCall";
 
 
 const getAuth = (data) => 
@@ -23,7 +24,6 @@ export const handleChangeLanguage = (language) => (dispatch) => {
 
 
 export const loginAPI = (loginUserPayload) => async (dispatch) => {
-  console.log("this is loginUserPayload :: ",loginUserPayload)
   try {
     const response = await userLogin(loginUserPayload);
     dispatch(getAuth(response.data));
@@ -41,3 +41,16 @@ export const registerAPI = (registerUserPayload) => async (dispatch) => {
     console.log("error");
   }
 };
+
+
+export const logout = () => (dispatch) => {
+  // Clear user session without hitting an API
+  dispatch({ type: types.LOGOUT });
+  // You might want to clear local storage or cookies here as well
+  localStorage.removeItem('token');
+};
+
+
+
+
+

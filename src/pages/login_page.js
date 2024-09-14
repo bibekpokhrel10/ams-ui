@@ -1,6 +1,6 @@
 import * as React from 'react';
-import  { useEffect, useState } from "react";
-import { auth, loginAPI } from "../action/auth";
+import  { useState } from "react";
+import { loginAPI } from "../action/auth";
 import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
 import CssBaseline from '@mui/material/CssBaseline';
@@ -13,7 +13,6 @@ import { useDispatch, useSelector } from "react-redux";
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Checkbox from '@mui/material/Checkbox';
 import Link from '@mui/material/Link';
-import Grid from '@mui/material/Grid';
 import { styled } from '@mui/material/styles';
 import Box from '@mui/material/Box';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
@@ -21,13 +20,11 @@ import Typography from '@mui/material/Typography';
 import InputAdornment from '@mui/material/InputAdornment';
 import MailOutlineIcon from '@mui/icons-material/MailOutline';
 import Container from '@mui/material/Container';
-import axios from 'axios';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import SupervisedUserCircleTwoToneIcon from '@mui/icons-material/SupervisedUserCircleTwoTone';
 import {useNavigate} from "react-router-dom";
 import { createTheme, ThemeProvider } from '@mui/material/styles';
-import { Navigate } from 'react-router-dom';
-import { Alert, Snackbar, getLinearProgressUtilityClass } from '@mui/material';
+import { Alert, Snackbar } from '@mui/material';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 
@@ -84,7 +81,7 @@ const formik = useFormik({
     try {
       const response = await dispatch(loginAPI(loginUserPayload));
       console.info("this is response :: ",response)
-      if (response.data.message=="Success") {
+      if (response.data.message==="Success") {
         setSnackbarMessage('Login successful!');
         setSnackbarSeverity('success');
         setOpenSnackbar(true);
@@ -379,11 +376,15 @@ const ellipseSelectStyle = {
       </Box>
       <Snackbar
         open={openSnackbar}
-        autoHideDuration={6000}
+        autoHideDuration={3000} // Set to 3 seconds
         onClose={handleCloseSnackbar}
-        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }} // Position in bottom right
       >
-        <Alert onClose={handleCloseSnackbar} severity={snackbarSeverity} sx={{ width: '100%' }}>
+        <Alert 
+          onClose={handleCloseSnackbar} 
+          severity={snackbarSeverity} 
+          sx={{ width: '100%' }}
+        >
           {snackbarMessage}
         </Alert>
       </Snackbar>

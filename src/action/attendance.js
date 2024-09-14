@@ -1,4 +1,3 @@
-import * as types from "../constant/actionTypes";
 import { getAttendance } from "../services/apiCall";
 
 
