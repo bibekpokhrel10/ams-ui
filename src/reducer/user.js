@@ -17,6 +17,7 @@ const userReducer = (state = initialState, action) => {
     case types.READ_NOTIFICATION_REQUEST:
     case types.FETCH_USERS_REQUEST:
     case types.UPDATE_USER_STATUS_REQUEST:
+    case types.FETCH_INSTITUTIONS_REQUEST:
       return { ...state, loading: true, error: null };
 
     case types.FETCH_USER_PROFILE_SUCCESS:
@@ -35,7 +36,7 @@ const userReducer = (state = initialState, action) => {
       };
 
     case types.FETCH_USERS_SUCCESS:
-      return { ...state, loading: false, users: action.payload.data };
+      return { ...state, loading: false, users: action.payload.data,  pagination: {total: action.payload.count, page: action.payload.page, size: action.payload.size} };
 
       case types.UPDATE_USER_PROFILE_SUCCESS:
         return {
@@ -62,6 +63,7 @@ const userReducer = (state = initialState, action) => {
     case types.FETCH_NOTIFICATIONS_FAILURE:
     case types.READ_NOTIFICATION_FAILURE:
     case types.UPDATE_USER_STATUS_FAILURE:
+    case types.FETCH_INSTITUTIONS_FAILURE:
       return { ...state, loading: false, error: action.payload };
 
     case types.LOGOUT:

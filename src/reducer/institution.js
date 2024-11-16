@@ -18,7 +18,8 @@ const institutionsReducer = (state = initialState, action) => {
           ...state,
           list: action.payload.data,
           loading: false,
-          error: null
+          error: null,
+          pagination: {total: action.payload.count, page: action.payload.page, size: action.payload.size}
         };
 
       case types.CREATE_INSTITUTION_SUCCESS:

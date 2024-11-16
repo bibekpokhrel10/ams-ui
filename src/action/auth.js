@@ -1,6 +1,6 @@
 import { getLinearProgressUtilityClass } from "@mui/material";
 import * as types from "../constant/actionTypes";
-import { registerUser, userLogin, getUserProfile, getNotifications, markNotificationAsRead, getUsers,  updateUserPasswordAPI, updateUserprofileAPI} from "../services/apiCall";
+import { registerUser, userLogin} from "../services/apiCall";
 
 
 const getAuth = (data) => 
@@ -27,18 +27,18 @@ export const loginAPI = (loginUserPayload) => async (dispatch) => {
   try {
     const response = await userLogin(loginUserPayload);
     dispatch(getAuth(response.data));
-    return response
+    return { success: true, data: response.data };
   } catch (error) {
-    console.log("error");
+    return { success: false, message: error.response.data.message };
   }
 };
 
 export const registerAPI = (registerUserPayload) => async (dispatch) => {
   try {
     const response = await registerUser(registerUserPayload);
-    return response
+    return { success: true, data: response.data };
   } catch (error) {
-    console.log("error");
+    return { success: false, message: error.response.data.message };
   }
 };
 

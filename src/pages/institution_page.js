@@ -24,6 +24,8 @@ import {
   IconButton,
   Menu,
   MenuItem,
+  TablePagination,
+  TableSortLabel,
 } from '@mui/material';
 import { styled } from '@mui/system';
 import SearchIcon from '@mui/icons-material/Search';
@@ -90,6 +92,8 @@ const Institution = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const institutions = useSelector(state => state.institutions.list || []);
+  const totalInstitutions = useSelector(state => state.institutions.total || 0);
+  const pagination = useSelector(state => state.institutions.pagination || {});
   const loading = useSelector(state => state.institutions.loading);
   const error = useSelector(state => state.institutions.error);
   const [openDialog, setOpenDialog] = useState(false);
@@ -99,6 +103,10 @@ const Institution = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [anchorEl, setAnchorEl] = useState(null);
   const [menuInstitution, setMenuInstitution] = useState(null);
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [sortColumn, setSortColumn] = useState('created_at');
+  const [sortDirection, setSortDirection] = useState('desc');
 
   useEffect(() => {
     dispatch(fetchInstitutions());
@@ -124,6 +132,36 @@ const Institution = () => {
   const handleMenuClose = () => {
     setAnchorEl(null);
     setMenuInstitution(null);
+  };
+
+  useEffect(() => {
+    fetchPaginatedInstitutions();
+  }, [dispatch, page, rowsPerPage, sortColumn, sortDirection, searchTerm]);
+
+  const fetchPaginatedInstitutions = () => {
+    const listRequest = {
+      page: page + 1,
+      size: rowsPerPage,
+      sort_column: sortColumn,
+      sort_direction: sortDirection,
+      query: searchTerm,
+    };
+    dispatch(fetchInstitutions(listRequest));
+  };
+
+  const handleChangePage = (event, newPage) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (event) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
+  };
+
+  const handleSort = (column) => {
+    const isAsc = sortColumn === column && sortDirection === 'asc';
+    setSortDirection(isAsc ? 'desc' : 'asc');
+    setSortColumn(column);
   };
 
   const handleDeleteInstitution = async () => {
@@ -189,12 +227,12 @@ const Institution = () => {
 
   return (
     <StyledContainer>
-      <Container maxWidth="md">
-        <Typography variant="h4" gutterBottom sx={{ color: '#C215AE', mb: 3, textAlign: 'left' }}>
+      <Container maxWidth="md" sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        <Typography variant="h4" gutterBottom sx={{ color: '#C215AE', mb: 3, alignSelf: 'flex-start' }}>
           Institution
         </Typography>
         <ContentBox>
-          <Box sx={{ display: 'flex', mb: 2 }}>
+        <Box sx={{ display: 'flex', mb: 2 }}>
             <TextField
               variant="outlined"
               placeholder="Search"
@@ -218,17 +256,43 @@ const Institution = () => {
               CREATE
             </RoundedButton>
           </Box>
-          <TableContainer component={Paper}>
+
+          <TableContainer component={Paper} sx={{ borderRadius: '20px', overflow: 'hidden' }}>
             <Table sx={{ minWidth: 650 }} aria-label="institutions table">
               <TableHead>
                 <TableRow sx={{ backgroundColor: '#F8DEF5' }}>
-                  <TableCell sx={{ fontWeight: 'bold' }}>Name</TableCell>
-                  <TableCell sx={{ fontWeight: 'bold' }}>Created at</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold' }}>
+                    <TableSortLabel
+                      active={sortColumn === 'id'}
+                      direction={sortColumn === 'id' ? sortDirection : 'asc'}
+                      onClick={() => handleSort('id')}
+                    >
+                      SN
+                    </TableSortLabel>
+                  </TableCell>
+                  <TableCell sx={{ fontWeight: 'bold' }}>
+                    <TableSortLabel
+                      active={sortColumn === 'name'}
+                      direction={sortColumn === 'name' ? sortDirection : 'asc'}
+                      onClick={() => handleSort('name')}
+                    >
+                      Name
+                    </TableSortLabel>
+                  </TableCell>
+                  <TableCell sx={{ fontWeight: 'bold' }}>
+                    <TableSortLabel
+                      active={sortColumn === 'created_at'}
+                      direction={sortColumn === 'created_at' ? sortDirection : 'asc'}
+                      onClick={() => handleSort('created_at')}
+                    >
+                      Created at
+                    </TableSortLabel>
+                  </TableCell>
                   <TableCell align="right"></TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
-                {filteredInstitutions.map((institution) => (
+                {institutions.map((institution, index) => (
                   <TableRow
                     key={institution.id}
                     sx={{ 
@@ -238,6 +302,7 @@ const Institution = () => {
                     }}
                     onClick={() => handleInstitutionClick(institution)}
                   >
+                    <TableCell>{page * rowsPerPage + index + 1}</TableCell>
                     <TableCell component="th" scope="row">
                       {institution.name}
                     </TableCell>
@@ -252,9 +317,23 @@ const Institution = () => {
               </TableBody>
             </Table>
           </TableContainer>
+          <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
+            <TablePagination
+              component="div"
+              count={pagination.total || 0}
+              page={page}
+              onPageChange={handleChangePage}
+              rowsPerPage={rowsPerPage}
+              onRowsPerPageChange={handleChangeRowsPerPage}
+              rowsPerPageOptions={[5, 10, 25, 50]}
+              labelDisplayedRows={({ from, to, count }) => `${from}–${to} of ${count !== -1 ? count : `more than ${to}`}`}
+              SelectProps={{
+                native: true,
+              }}
+            />
+          </Box>
         </ContentBox>
       </Container>
-
       <Dialog 
         open={openDialog} 
         onClose={() => setOpenDialog(false)}

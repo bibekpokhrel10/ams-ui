@@ -22,7 +22,6 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import { visuallyHidden } from '@mui/utils';
 import { useDispatch, useSelector } from 'react-redux';
-import { attendanceAPI } from '../../action/attendance';
 
 function createData(id, name, calories, fat, carbs, protein) {
   return {
@@ -236,9 +235,6 @@ export function EnhancedTable() {
   const [dense, setDense] = React.useState(false);
   const token = useSelector((state) => state.auth.isAuthenticated);
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
-  React.useEffect(() => {
-    dispatch(attendanceAPI(token));
-  }, []);
   const handleRequestSort = (event, property) => {
     const isAsc = orderBy === property && order === 'asc';
     setOrder(isAsc ? 'desc' : 'asc');

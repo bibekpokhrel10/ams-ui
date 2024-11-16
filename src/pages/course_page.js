@@ -26,10 +26,7 @@ import {
   MenuItem,
   Breadcrumbs,
   Link,
-  TablePagination,
-  TableSortLabel,
 } from '@mui/material';
-import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import { styled } from '@mui/system';
 import SearchIcon from '@mui/icons-material/Search';
 import SchoolIcon from '@mui/icons-material/School';
@@ -37,8 +34,9 @@ import MoreVertIcon from '@mui/icons-material/MoreVert';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
-import { fetchPrograms, createProgram, deleteProgram, updateProgram } from '../action/program';
+import { fetchCourses, createCourse, deleteCourse, updateCourse } from '../action/course';
 
+// Styled components (reuse from SemesterPage)
 const StyledContainer = styled(Box)(({ theme }) => ({
   backgroundColor: '#F8DEF5',
   minHeight: '100vh',
@@ -91,63 +89,38 @@ const textfieldStyle = {
   borderRadius: '50px',
 };
 
-const ProgramPage = () => {
+const CoursePage = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
-  const institutionName = location.state?.institutionName || "Unknown Institution";
-  const institutionId = location.state?.institutionId || '';
-  const programs = useSelector(state => state.programs.list || []);
-  const totalPrograms = useSelector(state => state.programs.total || 0);
-  const loading = useSelector(state => state.programs.loading);
-  const error = useSelector(state => state.programs.error);
+  const semesterName = location.state?.semesterName || "Unknown Semester";
+  const semesterId = location.state?.semesterId || '';
+  const courses = useSelector(state => state.courses.list || []);
+  const loading = useSelector(state => state.courses.loading);
+  const error = useSelector(state => state.courses.error);
   const [openDialog, setOpenDialog] = useState(false);
   const [openEditDialog, setOpenEditDialog] = useState(false);
-  const [selectedProgram, setSelectedProgram] = useState(null);
+  const [selectedCourse, setSelectedCourse] = useState(null);
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [snackbarSeverity, setSnackbarSeverity] = useState('success');
   const [searchTerm, setSearchTerm] = useState('');
   const [anchorEl, setAnchorEl] = useState(null);
-  const [menuProgram, setMenuProgram] = useState(null);
-  const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
-  const [sortColumn, setSortColumn] = useState('created_at');
-  const [sortDirection, setSortDirection] = useState('desc');
+  const [menuCourse, setMenuCourse] = useState(null);
 
-  const fetchPaginatedPrograms = () => {
-    const listRequest = {
-      page: page + 1,
-      size: rowsPerPage,
-      sort_column: sortColumn,
-      sort_direction: sortDirection,
-      query: searchTerm,
-    };
-    dispatch(fetchPrograms(institutionId,listRequest));
+  const handleCourseClick = (course) => {
+    navigate(`/courses/${course.id}/classes`, { 
+      state: { 
+        courseId: course.id, 
+        courseName: course.name,
+        institutionId: course.institution_id // Make sure this is available in your course data
+      }
+    });
   };
 
   useEffect(() => {
-    fetchPaginatedPrograms();
-  }, [dispatch, institutionId, page, rowsPerPage, sortColumn, sortDirection, searchTerm]);
-
-  const handleChangePage = (event, newPage) => {
-    setPage(newPage);
-  };
-
-  const handleChangeRowsPerPage = (event) => {
-    setRowsPerPage(parseInt(event.target.value, 10));
-    setPage(0);
-  };
-
-  const handleSort = (column) => {
-    const isAsc = sortColumn === column && sortDirection === 'asc';
-    setSortDirection(isAsc ? 'desc' : 'asc');
-    setSortColumn(column);
-  };
-
-  useEffect(() => {
-    dispatch(fetchPrograms(institutionId));
-  }, [dispatch, institutionId]);
+    dispatch(fetchCourses(semesterId));
+  }, [dispatch, semesterId]);
 
   const handleCloseSnackbar = (event, reason) => {
     if (reason === 'clickaway') {
@@ -156,28 +129,26 @@ const ProgramPage = () => {
     setOpenSnackbar(false);
   };
 
-   const handleMenuOpen = (event, program) => {
-    // Stop the click event from bubbling up to the table row
-    event.stopPropagation();
+  const handleMenuOpen = (event, course) => {
     setAnchorEl(event.currentTarget);
-    setMenuProgram(program);
+    setMenuCourse(course);
   };
 
   const handleMenuClose = () => {
     setAnchorEl(null);
-    setMenuProgram(null);
+    setMenuCourse(null);
   };
 
-  const handleDeleteProgram = async () => {
+  const handleDeleteCourse = async () => {
     try {
-      const response = await dispatch(deleteProgram(menuProgram.id));
+      const response = await dispatch(deleteCourse(menuCourse.id));
       if (response.success) {
-        setSnackbarMessage('Program deleted successfully!');
+        setSnackbarMessage('Course deleted successfully!');
         setSnackbarSeverity('success');
         setOpenSnackbar(true);
-        dispatch(fetchPrograms(institutionId));
+        dispatch(fetchCourses(semesterId));
       } else {
-        throw new Error(response.message || 'Failed to delete program');
+        throw new Error(response.message || 'Failed to delete course');
       }
     } catch (error) {
       setSnackbarMessage(error.message || 'An error occurred. Please try again.');
@@ -187,52 +158,41 @@ const ProgramPage = () => {
     handleMenuClose();
   };
 
-  const handleEditProgram = (program) => {
-    setSelectedProgram(program);
+  const handleEditCourse = (course) => {
+    setSelectedCourse(course);
     setOpenEditDialog(true);
-    handleMenuClose();
-  };
-
-  const handleProgramClick = (program) => {
-    navigate(`/programs/${program.id}/semesters`, { state: { programId: program.id, programName: program.name, institutionName: institutionName, institutionId: institutionId } });
-  };
-
-  const handleEnrollmentClick = (program) => {
-    navigate(`/programs/${program.id}/enrollments`, { 
-      state: { 
-        programId: program.id, 
-        programName: program.name,
-        institutionName: institutionName,
-        institutionId: institutionId
-      } 
-    });
     handleMenuClose();
   };
 
   const formik = useFormik({
     initialValues: {
-      programName: '',
+      code: '',
+      name: '',
+      credits: '',
     },
     validationSchema: Yup.object({
-      programName: Yup.string().required('Required'),
+      code: Yup.string().required('Required'),
+      name: Yup.string().required('Required'),
+      credits: Yup.number().required('Required').positive('Must be positive').integer('Must be an integer'),
     }),
     onSubmit: async (values, { resetForm }) => {
       try {
-        const programPayload = {
-          name: values.programName,
-          institution_id: institutionId,
+        const coursePayload = {
+          code: values.code,
+          name: values.name,
+          credits: parseInt(values.credits),
+          semester_id: semesterId,
         }
-        // console.log("program payload :: ", programPayload);
-        const response = await dispatch(createProgram(programPayload));
+        const response = await dispatch(createCourse(coursePayload));
         if (response.success) {
-          setSnackbarMessage('Program created successfully!');
+          setSnackbarMessage('Course created successfully!');
           setSnackbarSeverity('success');
           setOpenSnackbar(true);
           setOpenDialog(false);
           resetForm();
-          dispatch(fetchPrograms(institutionId));
+          dispatch(fetchCourses(semesterId));
         } else {
-          throw new Error(response.message || 'Failed to create program');
+          throw new Error(response.message || 'Failed to create course');
         }
       } catch (error) {
         setSnackbarMessage(error.message || 'An error occurred. Please try again.');
@@ -244,27 +204,33 @@ const ProgramPage = () => {
 
   const editFormik = useFormik({
     initialValues: {
-      programName: selectedProgram ? selectedProgram.name : '',
+      code: selectedCourse ? selectedCourse.code : '',
+      name: selectedCourse ? selectedCourse.name : '',
+      credits: selectedCourse ? selectedCourse.credits : '',
     },
     validationSchema: Yup.object({
-      programName: Yup.string().required('Required'),
+      code: Yup.string().required('Required'),
+      name: Yup.string().required('Required'),
+      credits: Yup.number().required('Required').positive('Must be positive').integer('Must be an integer'),
     }),
     onSubmit: async (values) => {
       try {
-        const programPayload = {
-          id: selectedProgram.id,
-          name: values.programName,
-          institutionId: institutionId,
+        const coursePayload = {
+          id: selectedCourse.id,
+          code: values.code,
+          name: values.name,
+          credits: parseInt(values.credits),
+          semester_id: semesterId,
         }
-        const response = await dispatch(updateProgram(programPayload));
+        const response = await dispatch(updateCourse(coursePayload));
         if (response.success) {
-          setSnackbarMessage('Program updated successfully!');
+          setSnackbarMessage('Course updated successfully!');
           setSnackbarSeverity('success');
           setOpenSnackbar(true);
           setOpenEditDialog(false);
-          dispatch(fetchPrograms(institutionId));
+          dispatch(fetchCourses(semesterId));
         } else {
-          throw new Error(response.message || 'Failed to update program');
+          throw new Error(response.message || 'Failed to update course');
         }
       } catch (error) {
         setSnackbarMessage(error.message || 'An error occurred. Please try again.');
@@ -275,34 +241,45 @@ const ProgramPage = () => {
   });
 
   useEffect(() => {
-    if (selectedProgram) {
-      editFormik.setValues({ programName: selectedProgram.name });
+    if (selectedCourse) {
+      editFormik.setValues({
+        code: selectedCourse.code,
+        name: selectedCourse.name,
+        credits: selectedCourse.credits,
+      });
     }
-  }, [selectedProgram]);
+  }, [selectedCourse]);
 
   const formatDate = (dateString) => {
     const options = { year: 'numeric', month: '2-digit', day: '2-digit' };
     return new Date(dateString).toLocaleDateString(undefined, options);
   };
 
-  const safePrograms = Array.isArray(programs) ? programs : [];
+  const safeCourses = Array.isArray(courses) ? courses : [];
 
-  const filteredPrograms = safePrograms.filter(program =>
-    program.name.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredCourses = safeCourses.filter(course =>
+    course.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    course.code.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
     <StyledContainer>
-<Container maxWidth="md" sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
+      <Container maxWidth="md" sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
         <Box sx={{ alignSelf: 'flex-start', width: '100%', mb: 3 }}>
           <Breadcrumbs aria-label="breadcrumb">
-            <Link color="inherit" href="/institutions" onClick={(e) => { e.preventDefault(); navigate('/institution'); }}>
+            <Link color="inherit" href="/institution" onClick={(e) => { e.preventDefault(); navigate('/institution'); }}>
               Institutions
             </Link>
-            <Typography color="text.primary">{institutionName}</Typography>
+            <Link color="inherit" href="/program" onClick={(e) => { e.preventDefault(); navigate(-2); }}>
+              Programs
+            </Link>
+            <Link color="inherit" href="/semester" onClick={(e) => { e.preventDefault(); navigate(-1); }}>
+              Semesters
+            </Link>
+            <Typography color="text.primary">{semesterName}</Typography>
           </Breadcrumbs>
           <Typography variant="h4" gutterBottom sx={{ color: '#C215AE', mt: 2 }}>
-            Programs for {institutionName}
+            Courses for {semesterName}
           </Typography>
         </Box>
         <ContentBox>
@@ -336,79 +313,42 @@ const ProgramPage = () => {
             </RoundedButton>
           </Box>
           <TableContainer component={Paper} sx={{ borderRadius: '20px', overflow: 'hidden' }}>
-            <Table sx={{ minWidth: 650 }} aria-label="programs table">
+            <Table sx={{ minWidth: 650 }} aria-label="courses table">
               <TableHead>
                 <TableRow sx={{ backgroundColor: '#F8DEF5' }}>
-                  <TableCell sx={{ fontWeight: 'bold' }}>
-                    <TableSortLabel
-                      active={sortColumn === 'id'}
-                      direction={sortColumn === 'id' ? sortDirection : 'asc'}
-                      onClick={() => handleSort('id')}
-                    >
-                      ID
-                    </TableSortLabel>
-                  </TableCell>
-                  <TableCell sx={{ fontWeight: 'bold' }}>
-                    <TableSortLabel
-                      active={sortColumn === 'name'}
-                      direction={sortColumn === 'name' ? sortDirection : 'asc'}
-                      onClick={() => handleSort('name')}
-                    >
-                      Name
-                    </TableSortLabel>
-                  </TableCell>
-                  <TableCell sx={{ fontWeight: 'bold' }}>
-                    <TableSortLabel
-                      active={sortColumn === 'created_at'}
-                      direction={sortColumn === 'created_at' ? sortDirection : 'asc'}
-                      onClick={() => handleSort('created_at')}
-                    >
-                      Created at
-                    </TableSortLabel>
-                  </TableCell>
+                  <TableCell sx={{ fontWeight: 'bold' }}>Code</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold' }}>Name</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold' }}>Credits</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold' }}>Created at</TableCell>
                   <TableCell align="right"></TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
-            {programs.map((program) => (
-              <TableRow
-                key={program.id}
-                sx={{ 
-                  '&:last-child td, &:last-child th': { border: 0 },
-                  '&:hover': { backgroundColor: '#f5f5f5', cursor: 'pointer' }
-                }}
-                onClick={() => handleProgramClick(program)}
-              >
-                <TableCell>{program.id}</TableCell>
-                <TableCell component="th" scope="row">
-                  {program.name}
-                </TableCell>
-                <TableCell>{formatDate(program.created_at)}</TableCell>
-                <TableCell align="right">
-                  <IconButton 
-                    onClick={(event) => handleMenuOpen(event, program)}
+                {filteredCourses.map((course) => (
+                  <TableRow
+                    key={course.id}
                     sx={{ 
-                      '&:hover': { backgroundColor: 'rgba(194, 21, 174, 0.04)' },
-                      zIndex: 2 // Ensure the button appears above other elements
+                      '&:last-child td, &:last-child th': { border: 0 },
+                      '&:hover': { backgroundColor: '#f5f5f5', cursor: 'pointer'}
                     }}
+                    onClick={() => handleCourseClick(course)}
                   >
-                    <MoreVertIcon />
-                  </IconButton>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
+                    <TableCell component="th" scope="row">
+                      {course.code}
+                    </TableCell>
+                    <TableCell>{course.name}</TableCell>
+                    <TableCell>{course.credits}</TableCell>
+                    <TableCell>{formatDate(course.created_at)}</TableCell>
+                    <TableCell align="right">
+                      <IconButton onClick={(event) => handleMenuOpen(event, course)}>
+                        <MoreVertIcon />
+                      </IconButton>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
             </Table>
           </TableContainer>
-          <TablePagination
-            component="div"
-            count={totalPrograms}
-            page={page}
-            onPageChange={handleChangePage}
-            rowsPerPage={rowsPerPage}
-            onRowsPerPageChange={handleChangeRowsPerPage}
-            rowsPerPageOptions={[5, 10, 25, 50]}
-          />
         </ContentBox>
       </Container>
 
@@ -422,21 +362,21 @@ const ProgramPage = () => {
           },
         }}
       >
-        <DialogTitle>Create Program</DialogTitle>
+        <DialogTitle>Create Course</DialogTitle>
         <DialogContent>
           <TextField
             autoFocus
             margin="dense"
-            id="programName"
-            name="programName"
-            label="Program Name"
+            id="code"
+            name="code"
+            label="Course Code"
             type="text"
             fullWidth
             variant="outlined"
-            value={formik.values.programName}
+            value={formik.values.code}
             onChange={formik.handleChange}
-            error={formik.touched.programName && Boolean(formik.errors.programName)}
-            helperText={formik.touched.programName && formik.errors.programName}
+            error={formik.touched.code && Boolean(formik.errors.code)}
+            helperText={formik.touched.code && formik.errors.code}
             sx={textfieldStyle}
             InputProps={{
               startAdornment: (
@@ -445,6 +385,34 @@ const ProgramPage = () => {
                 </InputAdornment>
               ),
             }}
+          />
+          <TextField
+            margin="dense"
+            id="name"
+            name="name"
+            label="Course Name"
+            type="text"
+            fullWidth
+            variant="outlined"
+            value={formik.values.name}
+            onChange={formik.handleChange}
+            error={formik.touched.name && Boolean(formik.errors.name)}
+            helperText={formik.touched.name && formik.errors.name}
+            sx={textfieldStyle}
+          />
+          <TextField
+            margin="dense"
+            id="credits"
+            name="credits"
+            label="Credits"
+            type="number"
+            fullWidth
+            variant="outlined"
+            value={formik.values.credits}
+            onChange={formik.handleChange}
+            error={formik.touched.credits && Boolean(formik.errors.credits)}
+            helperText={formik.touched.credits && formik.errors.credits}
+            sx={textfieldStyle}
           />
         </DialogContent>
         <DialogActions>
@@ -469,21 +437,21 @@ const ProgramPage = () => {
           },
         }}
       >
-        <DialogTitle>Edit Program</DialogTitle>
+        <DialogTitle>Edit Course</DialogTitle>
         <DialogContent>
           <TextField
             autoFocus
             margin="dense"
-            id="programName"
-            name="programName"
-            label="Program Name"
+            id="code"
+            name="code"
+            label="Course Code"
             type="text"
             fullWidth
             variant="outlined"
-            value={editFormik.values.programName}
+            value={editFormik.values.code}
             onChange={editFormik.handleChange}
-            error={editFormik.touched.programName && Boolean(editFormik.errors.programName)}
-            helperText={editFormik.touched.programName && editFormik.errors.programName}
+            error={editFormik.touched.code && Boolean(editFormik.errors.code)}
+            helperText={editFormik.touched.code && editFormik.errors.code}
             sx={textfieldStyle}
             InputProps={{
               startAdornment: (
@@ -492,6 +460,34 @@ const ProgramPage = () => {
                 </InputAdornment>
               ),
             }}
+          />
+          <TextField
+            margin="dense"
+            id="name"
+            name="name"
+            label="Course Name"
+            type="text"
+            fullWidth
+            variant="outlined"
+            value={editFormik.values.name}
+            onChange={editFormik.handleChange}
+            error={editFormik.touched.name && Boolean(editFormik.errors.name)}
+            helperText={editFormik.touched.name && editFormik.errors.name}
+            sx={textfieldStyle}
+          />
+          <TextField
+            margin="dense"
+            id="credits"
+            name="credits"
+            label="Credits"
+            type="number"
+            fullWidth
+            variant="outlined"
+            value={editFormik.values.credits}
+            onChange={editFormik.handleChange}
+            error={editFormik.touched.credits && Boolean(editFormik.errors.credits)}
+            helperText={editFormik.touched.credits && editFormik.errors.credits}
+            sx={textfieldStyle}
           />
         </DialogContent>
         <DialogActions>
@@ -511,15 +507,11 @@ const ProgramPage = () => {
         open={Boolean(anchorEl)}
         onClose={handleMenuClose}
       >
-        <MenuItem onClick={() => handleEditProgram(menuProgram)}>
+        <MenuItem onClick={() => handleEditCourse(menuCourse)}>
           <SchoolIcon sx={{ mr: 1 }} />
           Edit
         </MenuItem>
-        <MenuItem onClick={() => handleEnrollmentClick(menuProgram)}>
-          <PersonAddIcon sx={{ mr: 1 }} />
-          Enrollments
-        </MenuItem>
-        <MenuItem onClick={handleDeleteProgram}>
+        <MenuItem onClick={handleDeleteCourse}>
           <DeleteIcon sx={{ mr: 1 }} />
           Delete
         </MenuItem>
@@ -543,4 +535,4 @@ const ProgramPage = () => {
   );
 };
 
-export default ProgramPage;
+export default CoursePage;

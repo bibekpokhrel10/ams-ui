@@ -24,6 +24,7 @@ import { FormControl, InputLabel, Select, MenuItem } from '@mui/material';
 import { FormHelperText } from '@mui/material';
 import { Alert, Snackbar } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
+import { fetchInstitutions } from '../action/institution';
 
 const apiUrl = 'http://localhost:8080/register';
 
@@ -46,6 +47,39 @@ const defaultTheme = createTheme();
 
 export function RegisterPage() {
   const dispatch = useDispatch();
+  const [institutions, setInstitutions] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  
+  useEffect(() => {
+    const loadInstitutions = async () => {
+      setLoading(true);
+      try {
+        const response = await dispatch(fetchInstitutions());
+        console.log('Institutions API response:', response.data.data); // Debug log
+        
+        if (response.success && Array.isArray(response.data.data)) {
+          setInstitutions(response.data.data);
+        } else if (response.success && !Array.isArray(response.data.data)) {
+          console.error('Institution data is not an array:', response.data.data);
+          setInstitutions([]);
+          setError('Invalid institution data format');
+        } else {
+          console.error('Failed to load institutions:', response);
+          setInstitutions([]);
+          setError(response.message || 'Failed to load institutions');
+        }
+      } catch (error) {
+        console.error('Error loading institutions:', error);
+        setInstitutions([]);
+        setError('Failed to load institutions');
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadInstitutions();
+  }, [dispatch]);
+
 
   const validationSchema = Yup.object({
     email: Yup.string().email('Invalid email address').required('Required'),
@@ -56,6 +90,7 @@ export function RegisterPage() {
     address: Yup.string().required('Required'),
     date_of_birth: Yup.date().required('Required'),
     gender: Yup.string().required('Required'),
+    institution_id: Yup.string().required('Required'),
     password: Yup.string().min(6, 'Must be at least 6 characters').required('Required'),
     confirm_password: Yup.string()
       .oneOf([Yup.ref('password'), null], 'Passwords must match')
@@ -78,13 +113,14 @@ const [snackbarSeverity, setSnackbarSeverity] = useState('success');
       date_of_birth: '',
       gender: '',
       password: '',
-      confirm_password: ''
+      confirm_password: '',
+      institution_id: ''
     },
     validationSchema: validationSchema,
     onSubmit: async (values, { resetForm }) => {
       const registerUserPayload = {
         email: values.email,
-        name: values.first_name,
+        first_name: values.first_name,
         last_name: values.last_name,
         contact_no: values.contact_no,
         address: values.address,
@@ -92,12 +128,12 @@ const [snackbarSeverity, setSnackbarSeverity] = useState('success');
         gender: values.gender,
         user_type: values.user_type,
         password: values.password,
-        confirm_password: values.confirm_password
+        confirm_password: values.confirm_password,
+        institution_id: values.institution_id
       };
       try {
         const response = await dispatch(registerAPI(registerUserPayload));
-        console.log("this is response :: ",response.data.message)
-        if (response.data.message=="Success") {
+        if (response.success) {
           setSnackbarMessage('Registration successful!');
           setSnackbarSeverity('success');
           setOpenSnackbar(true);
@@ -106,7 +142,7 @@ const [snackbarSeverity, setSnackbarSeverity] = useState('success');
             navigate('/login');
           }, 2000);
         } else {
-          setSnackbarMessage(response.error || 'Registration failed. Please try again.');
+          setSnackbarMessage(response.message || 'Registration failed. Please try again.');
           setSnackbarSeverity('error');
           setOpenSnackbar(true);
         }
@@ -445,6 +481,52 @@ const [snackbarSeverity, setSnackbarSeverity] = useState('success');
         helperText={formik.errors.confirm_password}
       />
     </Grid>
+    <Grid item xs={4.5} mr={5}>
+        <FormControl fullWidth required sx={ellipseSelectStyle} error={formik.touched.institution_id && Boolean(formik.errors.institution_id)}>
+          <InputLabel id="institution_id">Institution</InputLabel>
+          <Select
+            labelId="institution_id"
+            id="institution_id"
+            label="Institution"
+            name="institution_id"
+            IconComponent={ArrowDropDownIcon}
+            value={formik.values.institution_id}
+            onChange={formik.handleChange}
+            disabled={loading}
+            sx={{
+              '& .MuiSelect-select': {
+                paddingLeft: '36px !important',
+              },
+            }}
+            MenuProps={{
+              PaperProps: {
+                sx: {
+                  borderRadius: '30px',
+                  marginTop: '8px',
+                  border: '1px solid rgba(0, 0, 0, 0.23)',
+                },
+              },
+            }}
+          >
+            {loading ? (
+              <StyledMenuItem disabled>Loading institutions...</StyledMenuItem>
+            ) : error ? (
+              <StyledMenuItem disabled>{error}</StyledMenuItem>
+            ) : institutions.length === 0 ? (
+              <StyledMenuItem disabled>No institutions available</StyledMenuItem>
+            ) : (
+              institutions.map((institution) => (
+                <StyledMenuItem key={institution.id} value={institution.id}>
+                  {institution.name}
+                </StyledMenuItem>
+              ))
+            )}
+          </Select>
+          {formik.touched.institution_id && formik.errors.institution_id && (
+            <FormHelperText>{formik.errors.institution_id}</FormHelperText>
+          )}
+        </FormControl>
+      </Grid>
   </Grid>
   <Grid container justifyContent="center" mt={1}>
               <Grid item>

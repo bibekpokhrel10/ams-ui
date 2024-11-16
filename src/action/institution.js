@@ -1,10 +1,11 @@
 import * as types from "../constant/actionTypes";
 import {  getInstitutions, createInstution, deleteInstution} from "../services/apiCall";
-export const fetchInstitutions = () => async (dispatch, getState) => {
+
+export const fetchInstitutions = (listInsitutionPayload) => async (dispatch, getState) => {
     try {
       dispatch({ type: types.FETCH_INSTITUTIONS_REQUEST }); // Add this line
       const token = getState().auth.token;
-      const response = await getInstitutions(token);
+      const response = await getInstitutions(token, listInsitutionPayload);
       dispatch({ type: types.FETCH_INSTITUTIONS_SUCCESS, payload: response.data });
       return { success: true, data: response.data };
     } catch (error) {

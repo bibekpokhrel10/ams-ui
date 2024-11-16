@@ -13,6 +13,7 @@ const Auth = (state = initialState, action) => {
         token: action.payload.data.token,
         isAuthenticated: true,
         role: action.payload.data.role,
+        currentUser: action.payload.data,
       };
     // Add other cases as needed
     default:

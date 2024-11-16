@@ -3,10 +3,10 @@ import * as types from "../constant/actionTypes";
 import { createProgramAPI, deleteProgramAPI, getProgramsAPI, updateProgramAPI} from "../services/apiCall";
 
 
-export const fetchPrograms = (institutionId) => async (dispatch, getState) => {
+export const fetchPrograms = (institutionId, listProgramPayload) => async (dispatch, getState) => {
     try {
         const token = getState().auth.token;
-        const response = await getProgramsAPI(institutionId, token);
+        const response = await getProgramsAPI(institutionId,listProgramPayload, token);
         dispatch({ type: types.FETCH_PROGRAMS_SUCCESS, payload: response.data });
         return { success: true, data: response.data };
     } catch (error) {
