@@ -17,17 +17,11 @@ export const fetchClasses = (institutionId, teacherId = null) => async (dispatch
 };
 
 // Take attendance for a class
-export const takeAttendance = (classId, attendanceData) => async (dispatch, getState) => {
+export const takeAttendance = (attendanceData) => async (dispatch, getState) => {
   try {
     dispatch({ type: types.TAKE_ATTENDANCE_REQUEST });
-    const token = getState().auth.token;
-    const payload = {
-      classId,
-      attendanceData,
-      date: new Date().toISOString(),
-    };
-    
-    const response = await takeAttendanceAPI(payload, token);
+    const token = getState().auth.token;    
+    const response = await takeAttendanceAPI(attendanceData, token);
     dispatch({ type: types.TAKE_ATTENDANCE_SUCCESS, payload: response.data });
     return { success: true, data: response.data };
   } catch (error) {
@@ -69,6 +63,20 @@ export const fetchAttendanceHistory = (classId, startDate, endDate) => async (di
   } catch (error) {
     const errorMessage = error.response?.data?.message || "Failed to fetch attendance history";
     dispatch({ type: types.FETCH_ATTENDANCE_HISTORY_FAILURE, payload: errorMessage });
+    return { success: false, message: errorMessage };
+  }
+};
+
+export const fetchAttendanceByDate = (query) => async (dispatch, getState) => {
+  try {
+    dispatch({ type: types.FETCH_ATTENDANCE_BY_DATE_REQUEST });
+    const token = getState().auth.token;
+    const response = await fetchAttendanceHistoryAPI(query, token);
+    dispatch({ type: types.FETCH_ATTENDANCE_BY_DATE_SUCCESS, payload: response.data });
+    return { success: true, data: response.data };
+  } catch (error) {
+    const errorMessage = error.response?.data?.message || "Failed to fetch attendance history";
+    dispatch({ type: types.FETCH_ATTENDANCE_BY_DATE_FAILURE, payload: errorMessage });
     return { success: false, message: errorMessage };
   }
 };

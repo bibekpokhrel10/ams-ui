@@ -48,11 +48,11 @@ export const enrollStudents = (classId, studentIds) => async (dispatch, getState
   }
 };
 
-export const unenrollStudent = (classId, studentId) => async (dispatch, getState) => {
+export const unenrollStudent = (studentId) => async (dispatch, getState) => {
   dispatch({ type: types.UNENROLL_CLASS_STUDENT_REQUEST });
   try {
     const token = getState().auth.token;
-    await unenrollClassStudentAPI(classId, studentId, token);
+    await unenrollClassStudentAPI(studentId, token);
     dispatch({
       type: types.UNENROLL_CLASS_STUDENT_SUCCESS,
       payload: studentId

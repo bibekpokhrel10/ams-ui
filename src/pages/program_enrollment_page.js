@@ -489,20 +489,20 @@ const ProgramEnrollmentPage = () => {
   return (
     <StyledContainer>
       {/* Breadcrumbs navigation */}
-      <Box sx={{ width: '100%', maxWidth: '1200px', mb: 2 }}>
-        <Breadcrumbs>
-          <Link
-            component="button"
-            variant="body1"
-            onClick={() => navigate('/institutions/'+institutionId+'/programs')}
-            sx={{ color: '#C215AE' }}
-          >
-            Programs
-          </Link>
-          <Typography color="text.primary">{programName}</Typography>
-          <Typography color="text.primary">Enrollment</Typography>
-        </Breadcrumbs>
-      </Box>
+      <Box sx={{ alignSelf: 'flex-start', width: '100%', mb: 3 }}>
+          <Breadcrumbs aria-label="breadcrumb">
+            <Link color="inherit" href="/institutions" onClick={(e) => { e.preventDefault(); navigate('/institution'); }}>
+              Institutions
+            </Link>
+            <Link color="inherit" href="/program" onClick={(e) => { e.preventDefault(); navigate(-1); }}>
+              Programs
+            </Link>
+            <Typography color="text.primary">{programName}</Typography>
+          </Breadcrumbs>
+          <Typography variant="h4" gutterBottom sx={{ color: '#C215AE', mt: 2 }}>
+            Enrollment for {programName}
+          </Typography>
+        </Box>
 
       <ContentBox>
         {/* Header section */}

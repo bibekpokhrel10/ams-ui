@@ -202,34 +202,24 @@ export const fetchClassesAPI = (institutionId, teacherId, token) => {
 
 // Take attendance for a class
 export const takeAttendanceAPI = (attendanceData, token) => {
-  return axios.post(`${process.env.REACT_APP_API}/attendance`, attendanceData, {
+  return axios.post(`${process.env.REACT_APP_API}/attendances`, attendanceData, {
     headers: { "Authorization": `Bearer ${token}` }
   });
 };
 
 // Update existing attendance record
 export const updateAttendanceAPI = (attendanceId, attendanceData, token) => {
-  return axios.put(`${process.env.REACT_APP_API}/attendance/${attendanceId}`, attendanceData, {
+  return axios.put(`${process.env.REACT_APP_API}/attendances/${attendanceId}`, attendanceData, {
     headers: { "Authorization": `Bearer ${token}` }
   });
 };
 
 // Fetch attendance history for a class
-export const fetchAttendanceHistoryAPI = (classId, startDate, endDate, token) => {
-  let url = `${process.env.REACT_APP_API}/attendance/${classId}/history`;
-  
-  // Add date range filters if provided
-  if (startDate || endDate) {
-    url += '?';
-    if (startDate) {
-      url += `start_date=${startDate}`;
-    }
-    if (endDate) {
-      url += startDate ? `&end_date=${endDate}` : `end_date=${endDate}`;
-    }
-  }
+export const fetchAttendanceHistoryAPI = (query, token) => {
+  let url = `${process.env.REACT_APP_API}/attendances`;
   
   return axios.get(url, {
+    params: query ,
     headers: { "Authorization": `Bearer ${token}` }
   });
 };
@@ -355,10 +345,12 @@ export const fetchEnrolledStudents = (programId, token) => {
   );
 }
 
-export const enrollClassStudentsAPI = (programId, studentIds, token) => {
+export const enrollClassStudentsAPI = (classId, studentIds, token) => {
   return axios.post(
-    `${process.env.REACT_APP_API}/programs/${programId}/enrollments`,
-    { student_ids: studentIds },
+    `${process.env.REACT_APP_API}/classes/enrollments`,
+    { student_ids: studentIds,
+      class_id: classId,
+     },
     {
       headers: { "Authorization": `Bearer ${token}` }
     }
@@ -366,10 +358,9 @@ export const enrollClassStudentsAPI = (programId, studentIds, token) => {
 }
 
 
-export const unenrollClassStudentAPI = (programId, studentIds, token) => {
-  return axios.post(
-    `${process.env.REACT_APP_API}/programs/${programId}/enrollments`,
-    { student_ids: studentIds },
+export const unenrollClassStudentAPI = (studentId, token) => {
+  return axios.delete(
+    `${process.env.REACT_APP_API}/classes/enrollments/${studentId}`,
     {
       headers: { "Authorization": `Bearer ${token}` }
     }
@@ -378,10 +369,28 @@ export const unenrollClassStudentAPI = (programId, studentIds, token) => {
 
 export const getClassEnrolledStudentsAPI = (classId, params, token) => {
   return axios.get(
-    `${process.env.REACT_APP_API}/classes/${classId}/enrollments`,
+    `${process.env.REACT_APP_API}/classes/enrollments`,
     {
-      params,
+      params: {
+        class_id: classId
+      },
+     params,
       headers: { "Authorization": `Bearer ${token}` }
     }
   );
 }
+
+
+export const getInstructorClassesAPI = (instructorId, token) => {
+  return axios.get(`${process.env.REACT_APP_API}/classes`, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+};
+
+export const getClassStudentsAPI = (query, token) => {
+  console.log("query :: ", query);
+  return axios.get(`${process.env.REACT_APP_API}/classes/enrollments`, {
+    params: query,
+    headers: { Authorization: `Bearer ${token}` }
+  });
+};

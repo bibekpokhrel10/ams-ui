@@ -253,12 +253,12 @@ const ClassEnrollmentPage = () => {
     }
 
     try {
-      const response = await dispatch(enrollStudents(programId, dialogState.selectedStudents));
+      const response = await dispatch(enrollStudents(classId, dialogState.selectedStudents));
       if (response.success) {
         showSnackbar('Students enrolled successfully');
         handleCloseDialog();
         // Refresh the enrollment list
-        dispatch(fetchEnrolledStudents(programId, {
+        dispatch(fetchEnrolledStudents(classId, {
           page: pagination.page,
           size: pagination.size,
           sort_column: sortState.column,
@@ -277,11 +277,11 @@ const ClassEnrollmentPage = () => {
 
   const handleUnenrollStudent = async (studentId) => {
     try {
-      const response = await dispatch(unenrollStudent(programId, studentId));
+      const response = await dispatch(unenrollStudent(studentId));
       if (response.success) {
         showSnackbar('Student unenrolled successfully');
         // Refresh the enrollment list
-        dispatch(fetchEnrolledStudents(programId, {
+        dispatch(fetchEnrolledStudents(classId, {
           page: pagination.page,
           size: pagination.size,
           sort_column: sortState.column,
@@ -494,28 +494,64 @@ const ClassEnrollmentPage = () => {
   return (
     <StyledContainer>
       {/* Breadcrumbs navigation */}
-      <Box sx={{ width: '100%', maxWidth: '1200px', mb: 2 }}>
-        <Breadcrumbs>
-          <Link
-            component="button"
-            variant="body1"
-            onClick={() => navigate('/institutions/'+institutionId+'/programs')}
-            sx={{ color: '#C215AE' }}
-          >
-            Programs
-          </Link>
-          <Link
-            component="button"
-            variant="body1"
-            onClick={() => navigate('/programs/'+programId+'/classes')}
-            sx={{ color: '#C215AE' }}
-          >
-            Classes
-          </Link>
-          <Typography color="text.primary">{className}</Typography>
-          <Typography color="text.primary">Enrollment</Typography>
-        </Breadcrumbs>
-      </Box>
+      <Box sx={{ alignSelf: 'flex-start', width: '100%', mb: 3 }}>
+  <Breadcrumbs aria-label="breadcrumb">
+    <Link 
+      color="inherit" 
+      href="/institution" 
+      onClick={(e) => { 
+        e.preventDefault(); 
+        navigate('/institution'); 
+      }}
+    >
+      Institutions
+    </Link>
+    <Link 
+      color="inherit" 
+      href="/program" 
+      onClick={(e) => { 
+        e.preventDefault(); 
+        navigate(-4); 
+      }}
+    >
+      Programs
+    </Link>
+    <Link 
+      color="inherit" 
+      href="/semester" 
+      onClick={(e) => { 
+        e.preventDefault(); 
+        navigate(-3); 
+      }}
+    >
+      Semesters
+    </Link>
+    <Link 
+      color="inherit" 
+      href="/courses" 
+      onClick={(e) => { 
+        e.preventDefault(); 
+        navigate(-2); 
+      }}
+    >
+      Courses
+    </Link>
+    <Link 
+      color="inherit" 
+      href="/classes" 
+      onClick={(e) => { 
+        e.preventDefault(); 
+        navigate(-1); 
+      }}
+    >
+      Classes
+    </Link>
+    <Typography color="text.primary">{className}</Typography>
+  </Breadcrumbs>
+  <Typography variant="h4" gutterBottom sx={{ color: '#C215AE', mt: 2 }}>
+    {className} - Enrollment
+  </Typography>
+</Box>
         <ContentBox>
         {/* Header section */}
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>

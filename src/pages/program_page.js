@@ -296,7 +296,7 @@ const ProgramPage = () => {
 <Container maxWidth="md" sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
         <Box sx={{ alignSelf: 'flex-start', width: '100%', mb: 3 }}>
           <Breadcrumbs aria-label="breadcrumb">
-            <Link color="inherit" href="/institutions" onClick={(e) => { e.preventDefault(); navigate('/institution'); }}>
+            <Link color="inherit" href="/institutions" onClick={(e) => { e.preventDefault(); navigate('/institutions'); }}>
               Institutions
             </Link>
             <Typography color="text.primary">{institutionName}</Typography>

@@ -245,9 +245,9 @@ export function PrimarySearchAppBar(props) {
       case 'teacher':
         menuItems.push(
           { 
-            text: 'Programs', 
+            text: 'Class', 
             icon: <SchoolIcon fontSize="large" />, 
-            path: `/institutions/${user.institution_id}/teacher-programs` 
+            path: `/instructor/classes` 
           },
           { 
             text: 'Attendance', 

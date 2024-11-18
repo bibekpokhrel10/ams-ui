@@ -8,6 +8,7 @@ import coursesReducer from "./reducer/course";
 import classesReducer from "./reducer/class";
 import enrollmentsReducer from "./reducer/program_enrollment";
 import classEnrollmentsReducer from "./reducer/class_enrollment";
+import instructorClassesReducer from "./reducer/class_instructor";
 
 const rootReducer = combineReducers({
   auth: Auth,
@@ -20,6 +21,7 @@ const rootReducer = combineReducers({
   classes: classesReducer,
   enrollments: enrollmentsReducer,
   classEnrollments: classEnrollmentsReducer,
+  instructorClasses: instructorClassesReducer,
 });
 
 export default rootReducer;
