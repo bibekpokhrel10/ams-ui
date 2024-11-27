@@ -201,6 +201,7 @@ const ClassPage = () => {
           institutionId: institutionId,
           year: classItem.year,
           schedule: classItem.schedule,
+          programId: classItem.course.semester.program_id,
           instructorName: getInstructorName(classItem.instructor_id)
         }
       });
@@ -346,7 +347,7 @@ const ClassPage = () => {
                   >
                     <TableCell>{classItem.year}</TableCell>
                     <TableCell>{classItem.schedule}</TableCell>
-                    <TableCell>{getInstructorName(classItem.instructor_id)}</TableCell>
+                    <TableCell>{classItem.user.first_name + ' ' + classItem.user.last_name}</TableCell>
                     <TableCell align="right">
                       <IconButton onClick={(event) => handleMenuOpen(event, classItem)}>
                         <MoreVertIcon />

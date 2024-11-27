@@ -22,7 +22,7 @@ const enrollmentsReducer = (state = initialState, action) => {
     case types.FETCH_ENROLLED_STUDENTS_SUCCESS:
       return {
         ...state,
-        list: action.payload.list,
+        list: action.payload.list || [],
         total: action.payload.total,
         loading: false,
         error: null,

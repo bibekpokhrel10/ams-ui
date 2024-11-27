@@ -452,7 +452,6 @@ return (
       </Dialog>
 
       {/* Menu */}
-      // In InstructorClassPage.jsx, modify the Menu component:
 <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose}>
   <MenuItem onClick={handleViewDetails}>
     <VisibilityIcon sx={{ mr: 1 }} />

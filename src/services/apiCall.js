@@ -225,12 +225,9 @@ export const fetchAttendanceHistoryAPI = (query, token) => {
 };
 
 // Get student attendance statistics
-export const getStudentAttendanceStatsAPI = (studentId, classId, token) => {
-  return axios.get(`${process.env.REACT_APP_API}/attendance/stats`, {
-    params: {
-      student_id: studentId,
-      class_id: classId
-    },
+export const getAttendanceStatsAPI = (query, token) => {
+  return axios.get(`${process.env.REACT_APP_API}/attendances/stats`, {
+    params: query,
     headers: { "Authorization": `Bearer ${token}` }
   });
 };
@@ -253,7 +250,9 @@ export const getEnrolledStudentsAPI = (programId, params, token) => {
         sort_column: params.sort_column,
         sort_direction: params.sort_direction,
         query: params.query,
-        program_id: programId
+        program_id: programId,
+        is_class_enrollment: params.is_class_enrollment,
+        class_id: params.class_id
       },
       headers: { "Authorization": `Bearer ${token}` }
     }
@@ -294,11 +293,11 @@ export const searchAvailableStudentsAPI = (query, token) => {
   );
 };
 
-export const getInstitutionUserAPI = (institutionId, query, token) => {
+export const getInstitutionUserAPI = (query, token) => {
   return axios.get(
     `${process.env.REACT_APP_API}/users`,
     {
-      params: { institution_id: institutionId, query },
+      params: query,
       headers: { "Authorization": `Bearer ${token}` }
     }
   );
@@ -394,3 +393,37 @@ export const getClassStudentsAPI = (query, token) => {
     headers: { Authorization: `Bearer ${token}` }
   });
 };
+
+
+export const getDashboardData = async (token, query) => {
+  const response = await axios.get(`${process.env.REACT_APP_API}/dashboard`, {
+    params: query,
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  return response;
+};
+
+export const getInstitutionAdminsAPI = (institutionId, query, token) => {
+  return axios.get(`${process.env.REACT_APP_API}/institution-admins`, {
+    params: {
+      institution_id: institutionId,
+      ...query
+    },
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  });
+};
+
+export const addInstitutionAdminAPI = (institutionId, userId, token) => {
+  return axios.post(`${process.env.REACT_APP_API}/institution-admins`, {
+    institution_id: institutionId,
+    user_id: userId
+  }, {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  });
+};
+
+

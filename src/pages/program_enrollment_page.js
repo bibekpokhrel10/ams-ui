@@ -174,13 +174,20 @@ const ProgramEnrollmentPage = () => {
   const handleOpenEnrollDialog = async () => {
     setDialogState(prev => ({ ...prev, open: true, loading: true }));
     try {
-      const response = await dispatch(fetchInstitutionUser(institutionId, {
+      const response = await dispatch(fetchInstitutionUser({
         page: 1,
         size: 50,
-        type: 'student',
+        user_type: 'student',
+        institution_id: institutionId,
+        is_program_enrollment: true,
+        program_id: programId
       }));
       
       if (response.success) {
+        if(response.data.data == null){
+          setDialogState(prev => ({ ...prev, loading: false }));
+          return
+        }
         const filteredStudents = response.data.data.filter(student => 
           !enrolledStudents.some(enrolled => enrolled.id === student.id)
         );

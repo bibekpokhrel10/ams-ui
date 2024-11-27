@@ -82,6 +82,7 @@ export const fetchInstructorClasses = (instructorId) => async (dispatch, getStat
 };
 
 export const fetchClassStudents = (query) => async (dispatch, getState) => {
+  console.log("fetch class students :: ", query);
   try {
     dispatch({ type: types.FETCH_CLASS_STUDENTS_REQUEST });
     const token = getState().auth.token;

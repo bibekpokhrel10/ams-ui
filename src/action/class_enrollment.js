@@ -5,7 +5,7 @@ import {
   unenrollClassStudentAPI,
 } from '../services/apiCall';
 
-export const fetchEnrolledStudents = (classId, params) => async (dispatch, getState) => {
+export const fetchClassEnrolledStudents = (classId, params) => async (dispatch, getState) => {
   dispatch({ type: types.FETCH_CLASS_ENROLLED_STUDENTS_REQUEST });
   try {
     const token = getState().auth.token;

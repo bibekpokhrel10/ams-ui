@@ -249,26 +249,6 @@ export function PrimarySearchAppBar(props) {
             icon: <SchoolIcon fontSize="large" />, 
             path: `/instructor/classes` 
           },
-          { 
-            text: 'Attendance', 
-            icon: <HowToRegIcon fontSize="large" />, 
-            path: '/attendances' 
-          }
-        );
-        break;
-
-      case 'student':
-        menuItems.push(
-          { 
-            text: 'Programs', 
-            icon: <SchoolIcon fontSize="large" />, 
-            path: `/institutions/${user.institution_id}/student-programs` 
-          },
-          { 
-            text: 'Attendance', 
-            icon: <HowToRegIcon fontSize="large" />, 
-            path: '/attendances' 
-          }
         );
         break;
 

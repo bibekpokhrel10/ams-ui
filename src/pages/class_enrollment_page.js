@@ -31,8 +31,8 @@ import { styled } from '@mui/system';
 import SearchIcon from '@mui/icons-material/Search';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { fetchEnrolledStudents, unenrollStudent, enrollStudents } from '../action/class_enrollment';
-import { fetchInstitutionUser } from '../action/user';
+import { fetchClassEnrolledStudents, unenrollStudent, enrollStudents } from '../action/class_enrollment';
+import { fetchEnrolledStudents } from '../action/program_enrollment';
 
 // Styled components
 const StyledContainer = styled(Box)(({ theme }) => ({
@@ -86,7 +86,7 @@ const ClassEnrollmentPage = () => {
   const programId = location.state?.programId;
 
   // Get data from Redux store
-  const { list: enrolledStudents, total, loading, error } = useSelector(state => state.classEnrollments);
+  const { list: enrolledStudents = [], total = 0, loading = false, error = null } = useSelector(state => state.classEnrollments || {});
 
   // Local state
   const [pagination, setPagination] = useState({
@@ -130,7 +130,7 @@ const ClassEnrollmentPage = () => {
       first_name: filters.firstName,
       type: filters.type,
     };
-    dispatch(fetchEnrolledStudents(classId, params));
+    dispatch(fetchClassEnrolledStudents(classId, params));
   }, [pagination, sortState, filters, dispatch, classId]);
 
   // Show error message if there's an error
@@ -175,18 +175,26 @@ const ClassEnrollmentPage = () => {
   const handleOpenEnrollDialog = async () => {
     setDialogState(prev => ({ ...prev, open: true, loading: true }));
     try {
-      // Fetch students who are enrolled in the program but not in this class
-      const response = await dispatch(fetchInstitutionUser(institutionId, {
-        page: 1,
-        size: 50,
-        type: 'student',
-        program_id: programId, // Add program filter
+
+      const response = await dispatch(fetchEnrolledStudents(programId, {
+        page: pagination.page,
+        size: pagination.size,
+        sort_column: sortState.column,
+        sort_direction: sortState.direction,
+        is_class_enrollment: true,
+        class_id: classId,
       }));
+
+      console.log("programid :: ", programId, "response :: ", response);
+      if (response.data.data == null) {
+        response.data.data = []
+      }
       
       if (response.success) {
         const filteredStudents = response.data.data.filter(student => 
           !enrolledStudents.some(enrolled => enrolled.id === student.id)
         );
+        console.log("filteredStudents :: ", filteredStudents);
         setDialogState(prev => ({
           ...prev,
           availableStudents: filteredStudents,
@@ -216,11 +224,10 @@ const ClassEnrollmentPage = () => {
   const handleSearchStudents = async (searchTerm) => {
     setDialogState(prev => ({ ...prev, searchTerm, loading: true }));
     try {
-      const response = await dispatch(fetchInstitutionUser(institutionId, {
+      const response = await dispatch(fetchEnrolledStudents(programId, {
         page: 1,
         size: 50,
         email: searchTerm,
-        type: 'student',
       }));
 
       if (response.success) {
@@ -258,7 +265,7 @@ const ClassEnrollmentPage = () => {
         showSnackbar('Students enrolled successfully');
         handleCloseDialog();
         // Refresh the enrollment list
-        dispatch(fetchEnrolledStudents(classId, {
+        dispatch(fetchClassEnrolledStudents(classId, {
           page: pagination.page,
           size: pagination.size,
           sort_column: sortState.column,
@@ -281,7 +288,7 @@ const ClassEnrollmentPage = () => {
       if (response.success) {
         showSnackbar('Student unenrolled successfully');
         // Refresh the enrollment list
-        dispatch(fetchEnrolledStudents(classId, {
+        dispatch(fetchClassEnrolledStudents(classId, {
           page: pagination.page,
           size: pagination.size,
           sort_column: sortState.column,
@@ -449,24 +456,24 @@ const ClassEnrollmentPage = () => {
                 </TableRow>
               ) : (
                 dialogState.availableStudents.map((student) => (
-                  <TableRow key={student.id}>
+                  <TableRow key={student.user.id}>
                     <TableCell padding="checkbox">
                       <Checkbox
-                        checked={dialogState.selectedStudents.includes(student.id)}
+                        checked={dialogState.selectedStudents.includes(student.user.id)}
                         onChange={(e) => {
                           setDialogState(prev => ({
                             ...prev,
                             selectedStudents: e.target.checked
-                              ? [...prev.selectedStudents, student.id]
-                              : prev.selectedStudents.filter(id => id !== student.id)
+                              ? [...prev.selectedStudents, student.user.id]
+                              : prev.selectedStudents.filter(id => id !== student.user.id)
                           }));
                         }}
                       />
                     </TableCell>
-                    <TableCell>{`${student.first_name} ${student.last_name}`}</TableCell>
-                    <TableCell>{student.email}</TableCell>
-                    <TableCell>{student.contact_number || 'N/A'}</TableCell>
-                    <TableCell>{student.gender || 'N/A'}</TableCell>
+                    <TableCell>{`${student.user.first_name} ${student.user.last_name}`}</TableCell>
+                    <TableCell>{student.user.email}</TableCell>
+                    <TableCell>{student.user.contact_number || 'N/A'}</TableCell>
+                    <TableCell>{student.user.gender || 'N/A'}</TableCell>
                   </TableRow>
                 ))
               )}

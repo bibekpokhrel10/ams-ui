@@ -67,11 +67,11 @@ export const updateUser = (userId, updateUserprofilePayload) => async (dispatch,
     }
   };
 
-  export const fetchInstitutionUser = (institutionId, query) => async (dispatch, getState) => {
+  export const fetchInstitutionUser = (query) => async (dispatch, getState) => {
     try {
       dispatch({ type: types.FETCH_INSTITUTION_USER_REQUEST });
       const token = getState().auth.token;
-      const response = await getInstitutionUserAPI(institutionId, query, token);
+      const response = await getInstitutionUserAPI(query, token);
       dispatch({ type: types.FETCH_INSTITUTION_USER_SUCCESS, payload: response.data });
       return { success: true, data: response.data };
     } catch (error) {

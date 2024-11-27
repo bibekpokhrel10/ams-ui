@@ -1,5 +1,5 @@
 import * as types from "../constant/actionTypes";
-import { fetchClassesAPI, takeAttendanceAPI, updateAttendanceAPI, fetchAttendanceHistoryAPI } from "../services/apiCall";
+import { fetchClassesAPI, takeAttendanceAPI, updateAttendanceAPI, fetchAttendanceHistoryAPI, getAttendanceStatsAPI } from "../services/apiCall";
 
 // Fetch classes for attendance
 export const fetchClasses = (institutionId, teacherId = null) => async (dispatch, getState) => {
@@ -72,6 +72,20 @@ export const fetchAttendanceByDate = (query) => async (dispatch, getState) => {
     dispatch({ type: types.FETCH_ATTENDANCE_BY_DATE_REQUEST });
     const token = getState().auth.token;
     const response = await fetchAttendanceHistoryAPI(query, token);
+    dispatch({ type: types.FETCH_ATTENDANCE_BY_DATE_SUCCESS, payload: response.data });
+    return { success: true, data: response.data };
+  } catch (error) {
+    const errorMessage = error.response?.data?.message || "Failed to fetch attendance history";
+    dispatch({ type: types.FETCH_ATTENDANCE_BY_DATE_FAILURE, payload: errorMessage });
+    return { success: false, message: errorMessage };
+  }
+};
+
+export const fetchAttendanceStats = ( query ) => async (dispatch, getState)  => {
+  try {
+    dispatch({ type: types.FETCH_ATTENDANCE_BY_DATE_REQUEST });
+    const token = getState().auth.token;
+    const response = await getAttendanceStatsAPI( query , token);
     dispatch({ type: types.FETCH_ATTENDANCE_BY_DATE_SUCCESS, payload: response.data });
     return { success: true, data: response.data };
   } catch (error) {

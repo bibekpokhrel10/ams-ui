@@ -9,6 +9,9 @@ import classesReducer from "./reducer/class";
 import enrollmentsReducer from "./reducer/program_enrollment";
 import classEnrollmentsReducer from "./reducer/class_enrollment";
 import instructorClassesReducer from "./reducer/class_instructor";
+import dashboardReducer from "./reducer/dashboard";
+import Institution from "./pages/institution_page";
+import institutionAdminReducer from "./reducer/institution_admin";
 
 const rootReducer = combineReducers({
   auth: Auth,
@@ -22,6 +25,8 @@ const rootReducer = combineReducers({
   enrollments: enrollmentsReducer,
   classEnrollments: classEnrollmentsReducer,
   instructorClasses: instructorClassesReducer,
+  dashboard: dashboardReducer,
+  institutionAdmins: institutionAdminReducer,
 });
 
 export default rootReducer;

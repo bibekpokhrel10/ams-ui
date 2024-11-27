@@ -1,258 +1,289 @@
-import React, { useState, useEffect } from 'react';
-import { Box, Container, Typography, Grid, Card, IconButton, Paper, List, ListItem, ListItemText, LinearProgress } from '@mui/material';
-import { styled } from '@mui/system';
-import PeopleIcon from '@mui/icons-material/People';
-import SchoolIcon from '@mui/icons-material/School';
-import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
-import MenuBookIcon from '@mui/icons-material/MenuBook';
-import TrendingUpIcon from '@mui/icons-material/TrendingUp';
-import TrendingDownIcon from '@mui/icons-material/TrendingDown';
+import React, { useEffect, useState } from 'react';
+import { useDispatch } from 'react-redux';
+import { CircularProgress, Alert } from '@mui/material';
+import { 
+  BookOpen, 
+  Users, 
+  Calendar, 
+  GraduationCap,
+  User,
+  BookOpen as ClassIcon
+} from 'lucide-react';
+import { fetchDashboardData } from '../action/dashboard';
 
-// Styled components matching institution page style
-const StyledContainer = styled(Box)(({ theme }) => ({
-  backgroundColor: '#F8DEF5',
-  minHeight: '100vh',
-  display: 'flex',
-  flexDirection: 'column',
-  padding: '2rem',
-}));
+const StyledContainer = ({ children }) => (
+  <div className="min-h-screen bg-[#F8DEF5] bg-opacity-30 p-8">
+    {children}
+  </div>
+);
 
-const ContentBox = styled(Box)(({ theme }) => ({
-  backgroundColor: 'white',
-  borderRadius: '24px',
-  padding: '1.5rem',
-  height: '100%',
-  boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
-}));
+const StatCard = ({ title, value, icon: Icon }) => (
+  <div className="bg-white rounded-xl p-6 shadow-sm flex items-center justify-between">
+    <div>
+      <p className="text-gray-600 text-sm font-medium">
+        {title}
+      </p>
+      <p className="mt-1 text-2xl font-bold">
+        {value}
+      </p>
+    </div>
+    <div className="bg-pink-100 rounded-xl p-3">
+      <Icon className="w-6 h-6 text-pink-600" />
+    </div>
+  </div>
+);
 
-const StatCard = styled(Card)(({ theme }) => ({
-  padding: '1.5rem',
-  borderRadius: '16px',
-  backgroundColor: 'white',
-  boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'space-between',
-}));
+const ProgressBar = ({ value }) => (
+  <div className="w-full bg-pink-100 rounded-full h-2">
+    <div 
+      className="bg-pink-600 h-2 rounded-full transition-all duration-300" 
+      style={{ width: `${value}%` }}
+    />
+  </div>
+);
 
-const IconWrapper = styled(Box)(({ theme }) => ({
-  backgroundColor: '#F8DEF5',
-  borderRadius: '12px',
-  padding: '12px',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-}));
-
-const ProgressBar = styled(LinearProgress)(({ theme }) => ({
-  height: 10,
-  borderRadius: 5,
-  '& .MuiLinearProgress-bar': {
-    backgroundColor: '#C215AE',
-  },
-  backgroundColor: '#F8DEF5',
-}));
-
-export const Dashboard = () => {
-  // Dummy data - replace with actual API calls
-  const [stats, setStats] = useState({
-    totalStudents: 1250,
-    totalInstitutions: 8,
-    averageAttendance: 85,
-    activePrograms: 24
-  });
-
-  const [attendanceTrends] = useState([
-    { month: 'January', attendance: 82 },
-    { month: 'February', attendance: 87 },
-    { month: 'March', attendance: 85 },
-    { month: 'April', attendance: 89 },
-    { month: 'May', attendance: 92 },
-    { month: 'June', attendance: 88 }
-  ]);
-
-  const [institutionDistribution] = useState([
-    { name: 'Engineering', percentage: 35 },
-    { name: 'Medical', percentage: 25 },
-    { name: 'Business', percentage: 20 },
-    { name: 'Arts', percentage: 20 }
-  ]);
-
-  const [recentPrograms] = useState([
-    { name: 'Computer Science', students: 120, trend: 'up' },
-    { name: 'Medicine', students: 85, trend: 'up' },
-    { name: 'Business Admin', students: 95, trend: 'down' },
-    { name: 'Civil Engineering', students: 75, trend: 'up' },
-  ]);
-
+export const Dashboard = ({ userType = 'super_admin' }) => {
+  const dispatch = useDispatch();
+  const [dashboardData, setDashboardData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  
   useEffect(() => {
-    // Replace with actual API calls
-    // const fetchDashboardData = async () => {
-    //   try {
-    //     const response = await fetch('/api/dashboard/stats');
-    //     const data = await response.json();
-    //     setStats(data.stats);
-    //   } catch (error) {
-    //     console.error('Error fetching dashboard data:', error);
-    //   }
-    // };
-    // fetchDashboardData();
-  }, []);
+    const getDashboardData = async () => {
+      try {
+        setLoading(true);
+        const response = await dispatch(fetchDashboardData({userType}));
+        if (response.success) {
+          setDashboardData(response.data);
+          setError(null);
+        } else {
+          setError(response.error || 'Failed to fetch dashboard data');
+          setDashboardData(null);
+        }
+      } catch (err) {
+        setError(err.message || 'An error occurred');
+        setDashboardData(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    getDashboardData();
+  }, [dispatch, userType]);
+
+  const renderStats = (stats, icons) => (
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      {Object.entries(stats).map(([key, value], index) => (
+        <StatCard
+          key={key}
+          title={key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}
+          value={typeof value === 'number' && key.toLowerCase().includes('attendance') 
+            ? `${value}%` 
+            : value}
+          icon={icons[index]}
+        />
+      ))}
+    </div>
+  );
+
+  const renderDashboardContent = () => {
+    if (loading) {
+      return (
+        <div className="flex justify-center items-center min-h-[400px]">
+          <CircularProgress sx={{ color: '#C215AE' }} />
+        </div>
+      );
+    }
+
+    if (error) {
+      return (
+        <Alert severity="error" className="mt-4">
+          {error}
+        </Alert>
+      );
+    }
+
+    if (!dashboardData || !dashboardData[userType]) {
+      return (
+        <Alert severity="info" className="mt-4">
+          No data available for this user type
+        </Alert>
+      );
+    }
+
+    const userData = dashboardData[userType];
+
+    switch (userType) {
+      case 'super_admin':
+        return (
+          <>
+            {renderStats(userData.stats, [
+              GraduationCap,
+              Users,
+              User,
+              BookOpen
+            ])}
+            <div className="mt-6">
+              <div className="bg-white rounded-xl p-6 shadow-sm">
+                <h2 className="text-xl font-bold mb-6">
+                  Institutions Overview
+                </h2>
+                {userData.institutionsList?.map((inst) => (
+                  <div key={inst.name} className="mb-4 last:mb-0">
+                    <div className="flex justify-between mb-2">
+                      <p className="text-sm font-medium">{inst.name}</p>
+                      <p className="text-sm font-medium text-pink-600">
+                        {inst.attendance}%
+                      </p>
+                    </div>
+                    <ProgressBar value={inst.attendance} />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </>
+        );
+
+      case 'institution_admin':
+        return (
+          <>
+            {renderStats(userData.stats, [
+              Users,
+              User,
+              BookOpen,
+              Calendar
+            ])}
+            <div className="mt-6">
+              <div className="bg-white rounded-xl p-6 shadow-sm">
+                <h2 className="text-xl font-bold mb-6">
+                  Monthly Attendance Trends
+                </h2>
+                {userData.attendanceTrends?.map((month) => (
+                  <div key={month.month} className="mb-4 last:mb-0">
+                    <div className="flex justify-between mb-2">
+                      <p className="text-sm font-medium">{month.month}</p>
+                      <p className="text-sm font-medium text-pink-600">
+                        {month.attendance}%
+                      </p>
+                    </div>
+                    <ProgressBar value={month.attendance} />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </>
+        );
+
+      case 'program_admin':
+        return (
+          <>
+            {renderStats(userData.stats, [
+              Users,
+              BookOpen,
+              Calendar
+            ])}
+            <div className="mt-6">
+              <div className="bg-white rounded-xl p-6 shadow-sm">
+                <h2 className="text-xl font-bold mb-6">
+                  Semester Overview
+                </h2>
+                {userData.semesterData?.map((sem) => (
+                  <div key={sem.name} className="mb-4 last:mb-0">
+                    <div className="flex justify-between mb-2">
+                      <p className="text-sm font-medium">{sem.name}</p>
+                      <p className="text-sm font-medium text-pink-600">
+                        {sem.attendance}%
+                      </p>
+                    </div>
+                    <ProgressBar value={sem.attendance} />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </>
+        );
+
+      case 'teacher':
+        return (
+          <>
+            {renderStats(userData.stats, [
+             ClassIcon,
+             Users,
+             Calendar
+            ])}
+            <div className="mt-6">
+              <div className="bg-white rounded-xl p-6 shadow-sm">
+                <h2 className="text-xl font-bold mb-6">
+                  Class Overview
+                </h2>
+                {userData.classes?.map((cls) => (
+                  <div key={cls.name} className="mb-4 last:mb-0">
+                    <div className="flex justify-between mb-2">
+                      <p className="text-sm font-medium">
+                        {cls.name} ({cls.students} students)
+                      </p>
+                      <p className="text-sm font-medium text-pink-600">
+                        {cls.attendance}%
+                      </p>
+                    </div>
+                    <ProgressBar value={cls.attendance} />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </>
+        );
+
+      case 'student':
+        return (
+          <>
+            {renderStats(userData.stats, [
+             BookOpen,
+             Calendar,
+             GraduationCap
+            ])}
+            <div className="mt-6">
+              <div className="bg-white rounded-xl p-6 shadow-sm">
+                <h2 className="text-xl font-bold mb-6">
+                  Course Performance
+                </h2>
+                {userData.courses?.map((course) => (
+                  <div key={course.name} className="mb-4 last:mb-0">
+                    <div className="flex justify-between mb-2">
+                      <p className="text-sm font-medium">
+                        {course.name} (Grade: {course.grade})
+                      </p>
+                      <p className="text-sm font-medium text-pink-600">
+                        {course.attendance}%
+                      </p>
+                    </div>
+                    <ProgressBar value={course.attendance} />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </>
+        );
+
+      default:
+        return (
+          <Alert severity="warning" className="mt-4">
+            Invalid user type specified
+          </Alert>
+        );
+    }
+  };
 
   return (
     <StyledContainer>
-      <Container maxWidth="xl">
-        <Typography variant="h4" sx={{ color: '#C215AE', mb: 4 }}>
+      <div className="max-w-7xl mx-auto">
+        <h1 className="text-3xl font-bold text-pink-600 mb-8">
           Dashboard Overview
-        </Typography>
-
-        <Grid container spacing={3}>
-          {/* Stats Cards */}
-          <Grid item xs={12} sm={6} md={3}>
-            <StatCard>
-              <Box>
-                <Typography color="text.secondary" variant="body2">
-                  Total Students
-                </Typography>
-                <Typography variant="h4" sx={{ mt: 1, fontWeight: 'bold' }}>
-                  {stats.totalStudents}
-                </Typography>
-              </Box>
-              <IconWrapper>
-                <PeopleIcon sx={{ color: '#C215AE', fontSize: 28 }} />
-              </IconWrapper>
-            </StatCard>
-          </Grid>
-
-          <Grid item xs={12} sm={6} md={3}>
-            <StatCard>
-              <Box>
-                <Typography color="text.secondary" variant="body2">
-                  Institutions
-                </Typography>
-                <Typography variant="h4" sx={{ mt: 1, fontWeight: 'bold' }}>
-                  {stats.totalInstitutions}
-                </Typography>
-              </Box>
-              <IconWrapper>
-                <SchoolIcon sx={{ color: '#C215AE', fontSize: 28 }} />
-              </IconWrapper>
-            </StatCard>
-          </Grid>
-
-          <Grid item xs={12} sm={6} md={3}>
-            <StatCard>
-              <Box>
-                <Typography color="text.secondary" variant="body2">
-                  Avg. Attendance
-                </Typography>
-                <Typography variant="h4" sx={{ mt: 1, fontWeight: 'bold' }}>
-                  {stats.averageAttendance}%
-                </Typography>
-              </Box>
-              <IconWrapper>
-                <CalendarTodayIcon sx={{ color: '#C215AE', fontSize: 28 }} />
-              </IconWrapper>
-            </StatCard>
-          </Grid>
-
-          <Grid item xs={12} sm={6} md={3}>
-            <StatCard>
-              <Box>
-                <Typography color="text.secondary" variant="body2">
-                  Active Programs
-                </Typography>
-                <Typography variant="h4" sx={{ mt: 1, fontWeight: 'bold' }}>
-                  {stats.activePrograms}
-                </Typography>
-              </Box>
-              <IconWrapper>
-                <MenuBookIcon sx={{ color: '#C215AE', fontSize: 28 }} />
-              </IconWrapper>
-            </StatCard>
-          </Grid>
-
-          {/* Attendance Trends */}
-          <Grid item xs={12} md={8}>
-            <ContentBox>
-              <Typography variant="h6" sx={{ mb: 3 }}>
-                Monthly Attendance Trends
-              </Typography>
-              <Grid container spacing={2}>
-                {attendanceTrends.map((month, index) => (
-                  <Grid item xs={12} key={month.month}>
-                    <Box sx={{ mb: 2 }}>
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                        <Typography variant="body2">{month.month}</Typography>
-                        <Typography variant="body2" sx={{ color: '#C215AE' }}>
-                          {month.attendance}%
-                        </Typography>
-                      </Box>
-                      <ProgressBar variant="determinate" value={month.attendance} />
-                    </Box>
-                  </Grid>
-                ))}
-              </Grid>
-            </ContentBox>
-          </Grid>
-
-          {/* Institution Distribution */}
-          <Grid item xs={12} md={4}>
-            <ContentBox>
-              <Typography variant="h6" sx={{ mb: 3 }}>
-                Institution Distribution
-              </Typography>
-              {institutionDistribution.map((inst) => (
-                <Box key={inst.name} sx={{ mb: 2 }}>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                    <Typography variant="body2">{inst.name}</Typography>
-                    <Typography variant="body2" sx={{ color: '#C215AE' }}>
-                      {inst.percentage}%
-                    </Typography>
-                  </Box>
-                  <ProgressBar variant="determinate" value={inst.percentage} />
-                </Box>
-              ))}
-            </ContentBox>
-          </Grid>
-
-          {/* Recent Programs */}
-          <Grid item xs={12}>
-            <ContentBox>
-              <Typography variant="h6" sx={{ mb: 3 }}>
-                Recent Programs Overview
-              </Typography>
-              <Grid container spacing={2}>
-                {recentPrograms.map((program) => (
-                  <Grid item xs={12} sm={6} md={3} key={program.name}>
-                    <Paper 
-                      elevation={0} 
-                      sx={{ 
-                        p: 2, 
-                        borderRadius: 2,
-                        border: '1px solid #F8DEF5',
-                      }}
-                    >
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
-                        <Typography variant="body1" sx={{ fontWeight: 'medium' }}>
-                          {program.name}
-                        </Typography>
-                        {program.trend === 'up' ? 
-                          <TrendingUpIcon sx={{ color: '#4CAF50' }} /> : 
-                          <TrendingDownIcon sx={{ color: '#f44336' }} />
-                        }
-                      </Box>
-                      <Typography variant="h6" sx={{ color: '#C215AE' }}>
-                        {program.students} students
-                      </Typography>
-                    </Paper>
-                  </Grid>
-                ))}
-              </Grid>
-            </ContentBox>
-          </Grid>
-        </Grid>
-      </Container>
+        </h1>
+        {renderDashboardContent()}
+      </div>
     </StyledContainer>
   );
 };
+
+export default Dashboard;
