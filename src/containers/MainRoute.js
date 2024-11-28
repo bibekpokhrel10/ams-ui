@@ -34,6 +34,7 @@ function Routing() {
           <Route path="/programs/:id/enrollments" element={<ProgramEnrollmentPage />} />
           <Route path="/classes/enrollment" element={<ClassEnrollmentPage />} />
           <Route path="/instructor/classes" element={<InstructorClassPage />} />
+          <Route path="/institutions/:id/users" element={<User />} />
         </Route>
       </Routes>
     </Router>

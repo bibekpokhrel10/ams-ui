@@ -33,6 +33,7 @@ import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { fetchClassEnrolledStudents, unenrollStudent, enrollStudents } from '../action/class_enrollment';
 import { fetchEnrolledStudents } from '../action/program_enrollment';
+import { fetchUserProfile } from '../action/user';
 
 // Styled components
 const StyledContainer = styled(Box)(({ theme }) => ({
@@ -78,6 +79,7 @@ const ClassEnrollmentPage = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
+  const user = useSelector(state => state.user.profile);
 
   // Get data from location state
   const classId = location.state?.classId || '';
@@ -131,6 +133,7 @@ const ClassEnrollmentPage = () => {
       type: filters.type,
     };
     dispatch(fetchClassEnrolledStudents(classId, params));
+    dispatch(fetchUserProfile());
   }, [pagination, sortState, filters, dispatch, classId]);
 
   // Show error message if there's an error
@@ -185,7 +188,6 @@ const ClassEnrollmentPage = () => {
         class_id: classId,
       }));
 
-      console.log("programid :: ", programId, "response :: ", response);
       if (response.data.data == null) {
         response.data.data = []
       }
@@ -194,7 +196,6 @@ const ClassEnrollmentPage = () => {
         const filteredStudents = response.data.data.filter(student => 
           !enrolledStudents.some(enrolled => enrolled.id === student.id)
         );
-        console.log("filteredStudents :: ", filteredStudents);
         setDialogState(prev => ({
           ...prev,
           availableStudents: filteredStudents,
@@ -503,6 +504,7 @@ const ClassEnrollmentPage = () => {
       {/* Breadcrumbs navigation */}
       <Box sx={{ alignSelf: 'flex-start', width: '100%', mb: 3 }}>
   <Breadcrumbs aria-label="breadcrumb">
+  {user.user_type == 'super_admin' && (
     <Link 
       color="inherit" 
       href="/institution" 
@@ -513,6 +515,7 @@ const ClassEnrollmentPage = () => {
     >
       Institutions
     </Link>
+  )}
     <Link 
       color="inherit" 
       href="/program" 

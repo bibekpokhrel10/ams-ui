@@ -38,6 +38,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import { fetchPrograms, createProgram, deleteProgram, updateProgram } from '../action/program';
+import { fetchUserProfile } from '../action/user';
 
 const StyledContainer = styled(Box)(({ theme }) => ({
   backgroundColor: '#F8DEF5',
@@ -96,9 +97,10 @@ const ProgramPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const institutionName = location.state?.institutionName || "Unknown Institution";
-  const institutionId = location.state?.institutionId || '';
+  // const institutionId = location.state?.institutionId || '';
   const programs = useSelector(state => state.programs.list || []);
   const totalPrograms = useSelector(state => state.programs.total || 0);
+  const user = useSelector(state => state.user.profile);
   const loading = useSelector(state => state.programs.loading);
   const error = useSelector(state => state.programs.error);
   const [openDialog, setOpenDialog] = useState(false);
@@ -114,6 +116,8 @@ const ProgramPage = () => {
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [sortColumn, setSortColumn] = useState('created_at');
   const [sortDirection, setSortDirection] = useState('desc');
+  const paramId = useParams();
+  const institutionId = paramId.id;
 
   const fetchPaginatedPrograms = () => {
     const listRequest = {
@@ -123,7 +127,7 @@ const ProgramPage = () => {
       sort_direction: sortDirection,
       query: searchTerm,
     };
-    dispatch(fetchPrograms(institutionId,listRequest));
+    dispatch(fetchPrograms(institutionId, listRequest));
   };
 
   useEffect(() => {
@@ -147,6 +151,7 @@ const ProgramPage = () => {
 
   useEffect(() => {
     dispatch(fetchPrograms(institutionId));
+    dispatch(fetchUserProfile());
   }, [dispatch, institutionId]);
 
   const handleCloseSnackbar = (event, reason) => {
@@ -295,12 +300,14 @@ const ProgramPage = () => {
     <StyledContainer>
 <Container maxWidth="md" sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
         <Box sx={{ alignSelf: 'flex-start', width: '100%', mb: 3 }}>
-          <Breadcrumbs aria-label="breadcrumb">
+          {user.user_type === 'super_admin' && (          
+            <Breadcrumbs aria-label="breadcrumb">
             <Link color="inherit" href="/institutions" onClick={(e) => { e.preventDefault(); navigate('/institutions'); }}>
               Institutions
             </Link>
             <Typography color="text.primary">{institutionName}</Typography>
           </Breadcrumbs>
+          )}
           <Typography variant="h4" gutterBottom sx={{ color: '#C215AE', mt: 2 }}>
             Programs for {institutionName}
           </Typography>

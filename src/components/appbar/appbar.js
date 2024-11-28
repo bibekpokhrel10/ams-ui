@@ -227,21 +227,6 @@ export function PrimarySearchAppBar(props) {
         );
         break;
 
-      case 'program_admin':
-        menuItems.push(
-          { 
-            text: 'My Programs', 
-            icon: <SchoolIcon fontSize="large" />, 
-            path: `/institutions/${user.institution_id}/admin-programs` 
-          },
-          { 
-            text: 'Users', 
-            icon: <PeopleIcon fontSize="large" />, 
-            path: `/institutions/${user.institution_id}/program-users` 
-          }
-        );
-        break;
-
       case 'teacher':
         menuItems.push(
           { 

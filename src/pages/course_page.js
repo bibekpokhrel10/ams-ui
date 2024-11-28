@@ -35,6 +35,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import { fetchCourses, createCourse, deleteCourse, updateCourse } from '../action/course';
+import { fetchUserProfile } from '../action/user';
 
 // Styled components (reuse from SemesterPage)
 const StyledContainer = styled(Box)(({ theme }) => ({
@@ -95,6 +96,7 @@ const CoursePage = () => {
   const location = useLocation();
   const semesterName = location.state?.semesterName || "Unknown Semester";
   const semesterId = location.state?.semesterId || '';
+  const user = useSelector(state => state.user.profile);
   const courses = useSelector(state => state.courses.list || []);
   const loading = useSelector(state => state.courses.loading);
   const error = useSelector(state => state.courses.error);
@@ -120,6 +122,7 @@ const CoursePage = () => {
 
   useEffect(() => {
     dispatch(fetchCourses(semesterId));
+    dispatch(fetchUserProfile());
   }, [dispatch, semesterId]);
 
   const handleCloseSnackbar = (event, reason) => {
@@ -267,9 +270,11 @@ const CoursePage = () => {
       <Container maxWidth="md" sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
         <Box sx={{ alignSelf: 'flex-start', width: '100%', mb: 3 }}>
           <Breadcrumbs aria-label="breadcrumb">
+            {user.user_type === 'super_admin' && (
             <Link color="inherit" href="/institution" onClick={(e) => { e.preventDefault(); navigate('/institution'); }}>
               Institutions
             </Link>
+            )}
             <Link color="inherit" href="/program" onClick={(e) => { e.preventDefault(); navigate(-2); }}>
               Programs
             </Link>

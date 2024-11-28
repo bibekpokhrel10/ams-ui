@@ -32,7 +32,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { fetchEnrolledStudents, unenrollStudent, enrollStudents } from '../action/program_enrollment';
-import { fetchInstitutionUser } from '../action/user';
+import { fetchInstitutionUser, fetchUserProfile } from '../action/user';
 
 // Styled components
 const StyledContainer = styled(Box)(({ theme }) => ({
@@ -78,6 +78,7 @@ const ProgramEnrollmentPage = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
+  const user = useSelector(state => state.user.profile);
 
   // Get data from location state
   const programId = location.state?.programId || '';
@@ -130,6 +131,7 @@ const ProgramEnrollmentPage = () => {
       type: filters.type,
     };
     dispatch(fetchEnrolledStudents(programId, params));
+    dispatch(fetchUserProfile())
   }, [pagination, sortState, filters, dispatch, programId]);
 
   // Show error message if there's an error
@@ -498,9 +500,11 @@ const ProgramEnrollmentPage = () => {
       {/* Breadcrumbs navigation */}
       <Box sx={{ alignSelf: 'flex-start', width: '100%', mb: 3 }}>
           <Breadcrumbs aria-label="breadcrumb">
+          {user.user_type === 'institution_admin' && (
             <Link color="inherit" href="/institutions" onClick={(e) => { e.preventDefault(); navigate('/institution'); }}>
               Institutions
-            </Link>
+            </Link>            
+          )}
             <Link color="inherit" href="/program" onClick={(e) => { e.preventDefault(); navigate(-1); }}>
               Programs
             </Link>

@@ -174,35 +174,6 @@ export const Dashboard = ({ userType = 'super_admin' }) => {
           </>
         );
 
-      case 'program_admin':
-        return (
-          <>
-            {renderStats(userData.stats, [
-              Users,
-              BookOpen,
-              Calendar
-            ])}
-            <div className="mt-6">
-              <div className="bg-white rounded-xl p-6 shadow-sm">
-                <h2 className="text-xl font-bold mb-6">
-                  Semester Overview
-                </h2>
-                {userData.semesterData?.map((sem) => (
-                  <div key={sem.name} className="mb-4 last:mb-0">
-                    <div className="flex justify-between mb-2">
-                      <p className="text-sm font-medium">{sem.name}</p>
-                      <p className="text-sm font-medium text-pink-600">
-                        {sem.attendance}%
-                      </p>
-                    </div>
-                    <ProgressBar value={sem.attendance} />
-                  </div>
-                ))}
-              </div>
-            </div>
-          </>
-        );
-
       case 'teacher':
         return (
           <>

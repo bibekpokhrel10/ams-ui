@@ -39,6 +39,7 @@ import GroupIcon from '@mui/icons-material/Group';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import { fetchClasses, createClass, deleteClass, updateClass, fetchInstructors } from '../action/class';
+import { fetchUserProfile } from '../action/user';
 
 // ... (keep all the styled components and textfieldStyle the same)
 const StyledContainer = styled(Box)(({ theme }) => ({
@@ -102,6 +103,7 @@ const ClassPage = () => {
     const institutionId = location.state?.institutionId || '';
     const classes = useSelector(state => state.classes.list || []);
     const instructors = useSelector(state => state.classes.instructors || []);
+    const user = useSelector(state => state.user.profile);
     const loading = useSelector(state => state.classes.loading);
     const error = useSelector(state => state.classes.error);
     const [openDialog, setOpenDialog] = useState(false);
@@ -117,6 +119,7 @@ const ClassPage = () => {
     useEffect(() => {
       dispatch(fetchClasses(courseId));
       dispatch(fetchInstructors(institutionId));
+      dispatch(fetchUserProfile());
     }, [dispatch, courseId, institutionId]);
   
     const validationSchema = Yup.object({
@@ -278,9 +281,11 @@ const ClassPage = () => {
       <Container maxWidth="md" sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
         <Box sx={{ alignSelf: 'flex-start', width: '100%', mb: 3 }}>
           <Breadcrumbs aria-label="breadcrumb">
+             {user.user_type === 'super_admin' && (
             <Link color="inherit" href="/institution" onClick={(e) => { e.preventDefault(); navigate('/institution'); }}>
               Institutions
             </Link>
+            )}
             <Link color="inherit" href="/program" onClick={(e) => { e.preventDefault(); navigate(-3); }}>
               Programs
             </Link>

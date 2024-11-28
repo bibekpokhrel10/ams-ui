@@ -343,7 +343,6 @@ export function LoginPage() {
                     <StyledMenuItem value="student">Student</StyledMenuItem>
                     <StyledMenuItem value="teacher">Teacher</StyledMenuItem>
                     <StyledMenuItem value="institution_admin">Institution Admin</StyledMenuItem>
-                    <StyledMenuItem value="program_admin">Program Admin</StyledMenuItem>
                     <StyledMenuItem value="super_admin">Super Admin</StyledMenuItem>
                   </Select>
                 </FormControl>

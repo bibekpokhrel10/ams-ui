@@ -1,5 +1,5 @@
 import * as types from "../constant/actionTypes";
-import {  getUsersAPI,getUserProfileAPI,updateUserprofileAPI, updateUserPasswordAPI,deleteUserAPI, getInstitutionUserAPI} from "../services/apiCall";
+import {  getUsersAPI,getUserProfileAPI,updateUserprofileAPI, updateUserPasswordAPI,deleteUserAPI, getInstitutionUserAPI, updateUserTypeAPI} from "../services/apiCall";
 
 export const updateUser = (userId, updateUserprofilePayload) => async (dispatch, getState) => {
     try {
@@ -14,6 +14,19 @@ export const updateUser = (userId, updateUserprofilePayload) => async (dispatch,
     }
   };
   
+  export const updateUserType = (userId, updateUserTypePayload) => async (dispatch, getState) => {
+    try {
+      dispatch({ type: types.UPDATE_USER_PROFILE_REQUEST });
+      const token = getState().auth.token;
+      const response = await updateUserTypeAPI(userId, updateUserTypePayload, token);
+      dispatch({ type: types.UPDATE_USER_PROFILE_SUCCESS, payload: response.data });
+       return { success: true, data: response.data };
+    } catch (error) {
+      dispatch({ type: types.UPDATE_USER_PROFILE_FAILURE, payload: error.response.data.message });
+      return { success: false, message: error.response.data.message };
+    }
+  };
+
   export const changeUserPassword = (userId, updatePasswordPayload) => async (dispatch, getState) => {
     try {
       dispatch({ type: types.CHANGE_USER_PASSWORD_REQUEST });

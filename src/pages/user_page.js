@@ -43,11 +43,13 @@ import * as Yup from 'yup';
 import { 
   fetchUsers, 
   updateUser, 
+  updateUserType,
   changeUserPassword, 
   deleteUser
 } from '../action/user';
 import { fetchInstitutions } from '../action/institution';
 import { fetchPrograms } from '../action/program';
+import { useParams } from 'react-router-dom';
 
 
 const StyledContainer = styled(Box)(({ theme }) => ({
@@ -129,9 +131,12 @@ const User = () => {
   const [selectedInstitution, setSelectedInstitution] = useState('');
   const [selectedProgram, setSelectedProgram] = useState('');
   const [filterInstitution, setFilterInstitution] = useState('');
+  const  paramId = useParams();
 
   useEffect(() => {
+    if(userProfile.user_type === 'super_admin'){
     dispatch(fetchUsers());
+    }
     dispatch(fetchInstitutions()).then(response => {
       if (response.success) {
         setInstitutions(response.data.data);
@@ -150,7 +155,9 @@ const User = () => {
   }, [selectedInstitution, dispatch]);
 
   useEffect(() => {
+    if(userProfile.user_type === 'super_admin'){
     dispatch(fetchUsers());
+    }
   }, [dispatch]);
 
   useEffect(() => {
@@ -158,14 +165,20 @@ const User = () => {
   }, [dispatch, page, rowsPerPage, sortColumn, sortDirection, searchTerm]);
 
   const fetchPaginatedUsers = () => {
+    
     const listRequest = {
       page: page + 1,
       size: rowsPerPage,
       sort_column: sortColumn,
       sort_direction: sortDirection,
       query: searchTerm,
-      institution_id: filterInstitution,
+     
     };
+
+    if(paramId != null && paramId.id != null && paramId.id != undefined){
+      listRequest.institution_id = paramId.id
+    }
+   
     dispatch(fetchUsers(listRequest));
   };
 
@@ -259,10 +272,10 @@ const User = () => {
     if (!userProfile || !userProfile.user_type) return [];
     
     if (userProfile.user_type === 'super_admin') {
-      return ['user', 'program_admin', 'institution_admin', 'teacher', 'student'];
+      return [ 'institution_admin', 'teacher', 'student'];
     }
     if (userProfile.user_type === 'institution_admin') {
-      return ['user', 'program_admin', 'teacher', 'student'];
+      return [ 'teacher', 'student'];
     }
     return [];
   };
@@ -313,20 +326,13 @@ const User = () => {
         };
   
         if (selectedUserType === 'institution_admin') {
-          if (!selectedInstitution) {
-            throw new Error('Please select an institution');
-          }
+          // if (!selectedInstitution) {
+          //   throw new Error('Please select an institution');
+          // }
           updateData.institution_id = selectedInstitution;
         }
   
-        if (selectedUserType === 'program_admin') {
-          if (!selectedProgram) {
-            throw new Error('Please select a program');
-          }
-          updateData.program_id = selectedProgram;
-        }
-  
-        const response = await dispatch(updateUser(selectedUserId, updateData));
+        const response = await dispatch(updateUserType(selectedUserId, updateData));
         if (response.success) {
           setSnackbarMessage('User type updated successfully!');
           setSnackbarSeverity('success');
@@ -455,24 +461,7 @@ const User = () => {
             </Select>
           </FormControl>
         )}
-
-        {selectedUserType === 'program_admin' && (
-          <FormControl fullWidth sx={{ mt: 2 }}>
-            <InputLabel>Program</InputLabel>
-            <Select
-              value={selectedProgram}
-              onChange={(e) => setSelectedProgram(e.target.value)}
-              label="Program"
-              disabled={!selectedInstitution}
-            >
-              {programs.map((program) => (
-                <MenuItem key={program.id} value={program.id}>
-                  {program.name}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-        )}
+        
       </DialogContent>
       <DialogActions>
         <Button onClick={() => setOpenUserTypeDialog(false)}>Cancel</Button>
