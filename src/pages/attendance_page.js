@@ -126,8 +126,7 @@ const AttendancePage = () => {
     total_students: 0,
     total_present: 0,
     total_absent: 0,
-    total_excused: 0,
-    total_leave: 0,
+    total_on_leave: 0,
     total_late: 0,
   });
 
@@ -135,7 +134,6 @@ const AttendancePage = () => {
     { value: 'present', label: 'Present' },
     { value: 'absent', label: 'Absent' },
     { value: 'late', label: 'Late' },
-    { value: 'excused', label: 'Excused' },
     { value: 'leave', label: 'On Leave' },
   ];
   
@@ -388,26 +386,24 @@ const AttendancePage = () => {
           <StatsCard elevation={2}>
             <Typography variant="h6">Present</Typography>
             <Typography variant="h4" sx={{ color: '#4CAF50' }}>{stats.total_present}</Typography>
-            <Typography variant="caption">Including Late</Typography>
           </StatsCard>
         </Grid>
         <Grid item xs={12} sm={2.4}>
           <StatsCard elevation={2}>
             <Typography variant="h6">Absent</Typography>
             <Typography variant="h4" sx={{ color: '#F44336' }}>{stats.total_absent}</Typography>
-            <Typography variant="caption">Unexcused Only</Typography>
-          </StatsCard>
-        </Grid>
-        <Grid item xs={12} sm={2.4}>
-          <StatsCard elevation={2}>
-            <Typography variant="h6">Excused</Typography>
-            <Typography variant="h4" sx={{ color: '#FF9800' }}>{stats.total_excused}</Typography>
           </StatsCard>
         </Grid>
         <Grid item xs={12} sm={2.4}>
           <StatsCard elevation={2}>
             <Typography variant="h6">On Leave</Typography>
-            <Typography variant="h4" sx={{ color: '#2196F3' }}>{stats.total_leave}</Typography>
+            <Typography variant="h4" sx={{ color: '#2196F3' }}>{stats.total_on_leave}</Typography>
+          </StatsCard>
+        </Grid>
+        <Grid item xs={12} sm={2.4}>
+          <StatsCard elevation={2}>
+            <Typography variant="h6">Late</Typography>
+            <Typography variant="h4" sx={{ color: 'yellow' }}>{stats.total_late}</Typography>
           </StatsCard>
         </Grid>
       </Grid>
@@ -419,7 +415,6 @@ const AttendancePage = () => {
               <TableRow sx={{ backgroundColor: '#F8DEF5' }}>
                 <TableCell sx={{ fontWeight: 'bold' }}>Student ID</TableCell>
                 <TableCell sx={{ fontWeight: 'bold' }}>Name</TableCell>
-                <TableCell sx={{ fontWeight: 'bold' }}>Status</TableCell>
                 <TableCell sx={{ fontWeight: 'bold' }}>Attendance Status</TableCell>
                 <TableCell sx={{ fontWeight: 'bold' }}>Actions</TableCell>
               </TableRow>
@@ -436,13 +431,13 @@ const AttendancePage = () => {
               {`${student.user.first_name} ${student.user.last_name}`}
             </Box>
           </TableCell>
-          <TableCell>
+          {/* <TableCell>
             <Chip
               label={student.user.status}
-              color={student.user.status === 'active' ? 'success' : 'default'}
+              color={student.status === 'active' ? 'success' : 'default'}
               size="small"
             />
-          </TableCell>
+          </TableCell> */}
           {renderAttendanceStatus(student)}
           <TableCell>
             <IconButton onClick={() => handleStudentClick(student)}>
@@ -529,10 +524,6 @@ const AttendancePage = () => {
                 </DetailItem>
               </Grid>
               <Grid item xs={12} md={6}>
-                <DetailItem>
-                  <Typography className="label">Status</Typography>
-                  <Typography className="value">{selectedStudent.user.status}</Typography>
-                </DetailItem>
                 <DetailItem>
                   <Typography className="label">Attendance ({format(selectedDate, 'MMM d, yyyy')})</Typography>
                   <Chip

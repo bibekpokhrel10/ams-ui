@@ -1,6 +1,22 @@
 import React, { useEffect, useState } from 'react';
+import { 
+  Box, 
+  Typography, 
+  Container, 
+  Grid, 
+  Paper, 
+  CircularProgress, 
+  Alert, 
+  TableContainer, 
+  Table, 
+  TableHead, 
+  TableRow, 
+  TableCell, 
+  TableBody,
+  IconButton
+} from '@mui/material';
+import { styled } from '@mui/system';
 import { useDispatch } from 'react-redux';
-import { CircularProgress, Alert } from '@mui/material';
 import { 
   BookOpen, 
   Users, 
@@ -10,55 +26,91 @@ import {
   BookOpen as ClassIcon
 } from 'lucide-react';
 import { fetchDashboardData } from '../action/dashboard';
+import { fetchUserProfile } from '../action/user';
+import { useSelector } from 'react-redux';
 
-const StyledContainer = ({ children }) => (
-  <div className="min-h-screen bg-[#F8DEF5] bg-opacity-30 p-8">
-    {children}
-  </div>
-);
+// Styled Components
+const StyledContainer = styled(Box)(({ theme }) => ({
+  backgroundColor: '#F8DEF5',
+  minHeight: '100vh',
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  padding: theme.spacing(4),
+}));
 
-const StatCard = ({ title, value, icon: Icon }) => (
-  <div className="bg-white rounded-xl p-6 shadow-sm flex items-center justify-between">
-    <div>
-      <p className="text-gray-600 text-sm font-medium">
-        {title}
-      </p>
-      <p className="mt-1 text-2xl font-bold">
-        {value}
-      </p>
-    </div>
-    <div className="bg-pink-100 rounded-xl p-3">
-      <Icon className="w-6 h-6 text-pink-600" />
-    </div>
-  </div>
-);
+const ContentBox = styled(Paper)(({ theme }) => ({
+  backgroundColor: 'white',
+  borderRadius: '50px',
+  padding: theme.spacing(4),
+  width: '100%',
+  boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
+}));
+
+const StatCard = styled(Paper)(({ theme }) => ({
+  borderRadius: '20px',
+  padding: theme.spacing(3),
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
+  transition: 'transform 0.3s ease',
+  '&:hover': {
+    transform: 'scale(1.02)',
+  }
+}));
 
 const ProgressBar = ({ value }) => (
-  <div className="w-full bg-pink-100 rounded-full h-2">
-    <div 
-      className="bg-pink-600 h-2 rounded-full transition-all duration-300" 
-      style={{ width: `${value}%` }}
+  <Box 
+    sx={{ 
+      width: '100%', 
+      backgroundColor: '#F8DEF5', 
+      borderRadius: '50px', 
+      height: '10px', 
+      overflow: 'hidden' 
+    }}
+  >
+    <Box 
+      sx={{ 
+        width: `${value}%`, 
+        height: '100%', 
+        backgroundColor: '#C215AE',
+        borderRadius: '50px',
+        transition: 'width 0.5s ease-in-out'
+      }} 
     />
-  </div>
+  </Box>
 );
 
-export const Dashboard = ({ userType = 'super_admin' }) => {
+export const Dashboard = () => {
   const dispatch = useDispatch();
   const [dashboardData, setDashboardData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const user = useSelector(state => state.user.profile);
   
   useEffect(() => {
-    const getDashboardData = async () => {
+    const fetchData = async () => {
       try {
-        setLoading(true);
-        const response = await dispatch(fetchDashboardData({userType}));
-        if (response.success) {
-          setDashboardData(response.data);
-          setError(null);
+        // First, fetch user profile
+        const userProfileResponse = await dispatch(fetchUserProfile());
+        
+        // Check if user profile is successfully fetched
+        if (userProfileResponse.success && userProfileResponse.data) {
+          const userType = userProfileResponse.data.user_type;
+          
+          // Now fetch dashboard data with the user type
+          setLoading(true);
+          const dashboardResponse = await dispatch(fetchDashboardData(userType));
+          
+          if (dashboardResponse.success) {
+            setDashboardData(dashboardResponse.data);
+            setError(null);
+          } else {
+            throw new Error(dashboardResponse.error || 'Failed to fetch dashboard data');
+          }
         } else {
-          setError(response.error || 'Failed to fetch dashboard data');
-          setDashboardData(null);
+          throw new Error('Failed to fetch user profile');
         }
       } catch (err) {
         setError(err.message || 'An error occurred');
@@ -67,53 +119,111 @@ export const Dashboard = ({ userType = 'super_admin' }) => {
         setLoading(false);
       }
     };
-
-    getDashboardData();
-  }, [dispatch, userType]);
-
+  
+    fetchData();
+  }, [dispatch]); 
   const renderStats = (stats, icons) => (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+    <Grid container spacing={3}>
       {Object.entries(stats).map(([key, value], index) => (
-        <StatCard
-          key={key}
-          title={key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}
-          value={typeof value === 'number' && key.toLowerCase().includes('attendance') 
-            ? `${value}%` 
-            : value}
-          icon={icons[index]}
-        />
+        <Grid item xs={12} sm={6} md={3} key={key}>
+          <StatCard elevation={3}>
+            <Box>
+              <Typography variant="subtitle2" color="textSecondary" gutterBottom>
+                {key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}
+              </Typography>
+              <Typography variant="h5" sx={{ fontWeight: 'bold', color: '#C215AE' }}>
+                {typeof value === 'number' && key.toLowerCase().includes('attendance') 
+                  ? `${value}%` 
+                  : value}
+              </Typography>
+            </Box>
+            <Box 
+              sx={{ 
+                backgroundColor: '#F8DEF5', 
+                borderRadius: '50%', 
+                p: 1.5 
+              }}
+            >
+              {React.createElement(icons[index], { 
+                color: '#C215AE', 
+                size: 24 
+              })}
+            </Box>
+          </StatCard>
+        </Grid>
       ))}
-    </div>
+    </Grid>
   );
 
   const renderDashboardContent = () => {
     if (loading) {
       return (
-        <div className="flex justify-center items-center min-h-[400px]">
+        <Box display="flex" justifyContent="center" alignItems="center" minHeight="60vh">
           <CircularProgress sx={{ color: '#C215AE' }} />
-        </div>
+        </Box>
       );
     }
 
     if (error) {
-      return (
-        <Alert severity="error" className="mt-4">
-          {error}
-        </Alert>
-      );
+      return <Alert severity="error">{error}</Alert>;
     }
-
-    if (!dashboardData || !dashboardData[userType]) {
-      return (
-        <Alert severity="info" className="mt-4">
-          No data available for this user type
-        </Alert>
-      );
+    console.log("dashboardData :: ", dashboardData);
+    console.log("user type :: ", user);
+    if (!dashboardData || !dashboardData[user.user_type]) {
+      return <Alert severity="info">No data available for this user type</Alert>;
     }
+    
+    const userData = dashboardData[user.user_type];
 
-    const userData = dashboardData[userType];
+    const renderDetailSection = (title, items, keyName, valueKey = 'attendance') => (
+      <ContentBox sx={{ mt: 3, p: 3 }}>
+        <Typography variant="h6" sx={{ mb: 2, color: '#C215AE', fontWeight: 'bold' }}>
+          {title}
+        </Typography>
+        <TableContainer>
+          <Table>
+            <TableHead sx={{ backgroundColor: '#F8DEF5' }}>
+              <TableRow>
+                <TableCell sx={{ fontWeight: 'bold' }}>{keyName}</TableCell>
+                <TableCell sx={{ fontWeight: 'bold' }} align="right">Percentage</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {items.map((item) => (
+                <TableRow key={item.course_name || item.name} hover>
+                  <TableCell>
+                    {item.course_name || item.name}
+                    {item.students ? ` (${item.students} students)` : ''}
+                    {item.grade ? ` (Grade: ${item.grade})` : ''}
+                    {item.program_name ? ` (${item.program_name})` : ''}
+                    {item.instructor_name ? ` - ${item.instructor_name}` : ''}
+                  </TableCell>
+                  <TableCell align="right">
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
+                      <Typography 
+                        variant="body2" 
+                        sx={{ 
+                          mr: 2, 
+                          color: '#C215AE', 
+                          fontWeight: 'bold' 
+                        }}
+                      >
+                        {item[valueKey]}%
+                      </Typography>
+                      <Box sx={{ width: '100px' }}>
+                        <ProgressBar value={item[valueKey]} />
+                      </Box>
+                    </Box>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </ContentBox>
+    );
 
-    switch (userType) {
+    switch (user.user_type) {
       case 'super_admin':
         return (
           <>
@@ -123,24 +233,7 @@ export const Dashboard = ({ userType = 'super_admin' }) => {
               User,
               BookOpen
             ])}
-            <div className="mt-6">
-              <div className="bg-white rounded-xl p-6 shadow-sm">
-                <h2 className="text-xl font-bold mb-6">
-                  Institutions Overview
-                </h2>
-                {userData.institutionsList?.map((inst) => (
-                  <div key={inst.name} className="mb-4 last:mb-0">
-                    <div className="flex justify-between mb-2">
-                      <p className="text-sm font-medium">{inst.name}</p>
-                      <p className="text-sm font-medium text-pink-600">
-                        {inst.attendance}%
-                      </p>
-                    </div>
-                    <ProgressBar value={inst.attendance} />
-                  </div>
-                ))}
-              </div>
-            </div>
+            {renderDetailSection('Institutions Overview', userData.institutions_list, 'Institution')}
           </>
         );
 
@@ -153,24 +246,7 @@ export const Dashboard = ({ userType = 'super_admin' }) => {
               BookOpen,
               Calendar
             ])}
-            <div className="mt-6">
-              <div className="bg-white rounded-xl p-6 shadow-sm">
-                <h2 className="text-xl font-bold mb-6">
-                  Monthly Attendance Trends
-                </h2>
-                {userData.attendanceTrends?.map((month) => (
-                  <div key={month.month} className="mb-4 last:mb-0">
-                    <div className="flex justify-between mb-2">
-                      <p className="text-sm font-medium">{month.month}</p>
-                      <p className="text-sm font-medium text-pink-600">
-                        {month.attendance}%
-                      </p>
-                    </div>
-                    <ProgressBar value={month.attendance} />
-                  </div>
-                ))}
-              </div>
-            </div>
+            {renderDetailSection('Monthly Attendance Trends', userData.attendance_trends, 'Month')}
           </>
         );
 
@@ -182,26 +258,7 @@ export const Dashboard = ({ userType = 'super_admin' }) => {
              Users,
              Calendar
             ])}
-            <div className="mt-6">
-              <div className="bg-white rounded-xl p-6 shadow-sm">
-                <h2 className="text-xl font-bold mb-6">
-                  Class Overview
-                </h2>
-                {userData.classes?.map((cls) => (
-                  <div key={cls.name} className="mb-4 last:mb-0">
-                    <div className="flex justify-between mb-2">
-                      <p className="text-sm font-medium">
-                        {cls.name} ({cls.students} students)
-                      </p>
-                      <p className="text-sm font-medium text-pink-600">
-                        {cls.attendance}%
-                      </p>
-                    </div>
-                    <ProgressBar value={cls.attendance} />
-                  </div>
-                ))}
-              </div>
-            </div>
+            {renderDetailSection('Class Overview', userData.classes, 'Class', 'attendance')}
           </>
         );
 
@@ -209,50 +266,36 @@ export const Dashboard = ({ userType = 'super_admin' }) => {
         return (
           <>
             {renderStats(userData.stats, [
-             BookOpen,
-             Calendar,
-             GraduationCap
+              BookOpen,
+              Calendar,
+              GraduationCap
             ])}
-            <div className="mt-6">
-              <div className="bg-white rounded-xl p-6 shadow-sm">
-                <h2 className="text-xl font-bold mb-6">
-                  Course Performance
-                </h2>
-                {userData.courses?.map((course) => (
-                  <div key={course.name} className="mb-4 last:mb-0">
-                    <div className="flex justify-between mb-2">
-                      <p className="text-sm font-medium">
-                        {course.name} (Grade: {course.grade})
-                      </p>
-                      <p className="text-sm font-medium text-pink-600">
-                        {course.attendance}%
-                      </p>
-                    </div>
-                    <ProgressBar value={course.attendance} />
-                  </div>
-                ))}
-              </div>
-            </div>
+            {renderDetailSection('Courses', userData.classes, 'Course', 'class_attendance')}
+            {renderDetailSection('Monthly Attendance', userData.monthly_attendance, 'Month', 'attendance')}
           </>
         );
 
       default:
-        return (
-          <Alert severity="warning" className="mt-4">
-            Invalid user type specified
-          </Alert>
-        );
+        return <Alert severity="warning">Invalid user type specified</Alert>;
     }
   };
 
   return (
     <StyledContainer>
-      <div className="max-w-7xl mx-auto">
-        <h1 className="text-3xl font-bold text-pink-600 mb-8">
+      <Container maxWidth="lg">
+        <Typography 
+          variant="h4" 
+          sx={{ 
+            color: '#C215AE', 
+            mb: 3, 
+            fontWeight: 'bold' 
+          }}
+        >
           Dashboard Overview
-        </h1>
+        </Typography>
+        
         {renderDashboardContent()}
-      </div>
+      </Container>
     </StyledContainer>
   );
 };
