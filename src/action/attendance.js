@@ -1,5 +1,5 @@
 import * as types from "../constant/actionTypes";
-import { fetchClassesAPI, takeAttendanceAPI, updateAttendanceAPI, fetchAttendanceHistoryAPI, getAttendanceStatsAPI } from "../services/apiCall";
+import { fetchClassesAPI, takeAttendanceAPI, updateAttendanceAPI, fetchAttendanceHistoryAPI, getAttendanceStatsAPI, getStudentClassAttendanceAPI, getTeacherClassAttendanceAPI, sendAttendanceAlertAPI } from "../services/apiCall";
 
 // Fetch classes for attendance
 export const fetchClasses = (institutionId, teacherId = null) => async (dispatch, getState) => {
@@ -94,3 +94,38 @@ export const fetchAttendanceStats = ( query ) => async (dispatch, getState)  => 
     return { success: false, message: errorMessage };
   }
 };
+
+export const fetchClassAttendanceData = (classId, userType) => async (dispatch, getState) => {
+  try {
+    console.log("fetch class attendance data :: ", classId, userType);
+    dispatch({ type: types.FETCH_CLASS_ATTENDANCE_DATA_REQUEST });
+    const token = getState().auth.token;
+    if (userType === "student") {
+      const response = await getStudentClassAttendanceAPI(classId, token);
+      dispatch({ type: types.FETCH_CLASS_ATTENDANCE_DATA_SUCCESS, payload: response.data });
+      return { success: true, data: response.data };
+    } else {
+      const response = await getTeacherClassAttendanceAPI(classId, token);
+      dispatch({ type: types.FETCH_CLASS_ATTENDANCE_DATA_SUCCESS, payload: response.data });
+      return { success: true, data: response.data };
+    }
+  } catch (error) {
+    const errorMessage = error.response?.data?.message || "Failed to fetch class attendance data";
+    dispatch({ type: types.FETCH_CLASS_ATTENDANCE_DATA_FAILURE, payload: errorMessage });
+    return { success: false, message: errorMessage };
+  }
+}
+
+export const sendAttendanceAlert = (payload) => async (dispatch, getState) => {
+  try {
+    dispatch({ type: types.SEND_ATTENDANCE_ALERT_REQUEST });
+    const token = getState().auth.token;
+    const response = await sendAttendanceAlertAPI(payload.user_type, payload.threshold, token);
+    dispatch({ type: types.SEND_ATTENDANCE_ALERT_SUCCESS, payload: response.data });
+    return { success: true, data: response.data };
+  } catch (error) {
+    const errorMessage = error.response?.data?.message || "Failed to send attendance alert";
+    dispatch({ type: types.SEND_ATTENDANCE_ALERT_FAILURE, payload: errorMessage });
+    return { success: false, message: errorMessage };
+  }
+}

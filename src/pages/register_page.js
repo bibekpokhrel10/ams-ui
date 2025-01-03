@@ -259,32 +259,38 @@ const [snackbarSeverity, setSnackbarSeverity] = useState('success');
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',
-          background: 'linear-gradient(180deg, #A6539C 0%, rgba(166, 83, 156, 0.7) 100%)'
+          background: 'linear-gradient(180deg, #A6539C 0%, rgba(166, 83, 156, 0.7) 100%)',
+          overflow: 'auto', // Added to handle potential overflow
+          padding: '20px 0' // Added to give some breathing room
         }}
       >
       <Container component="main" maxWidth="md"
       sx = {{
-        height: '500px',
+        height: 'auto', // Changed from fixed height to auto
+        minHeight: '500px', // Minimum height maintained
         width: '100%',
         borderRadius: '50px',
         backgroundColor: '#F8DEF5',
+        padding: '20px', // Added padding
+        boxSizing: 'border-box', // Ensures padding is included in width calculation
       }}>
         <CssBaseline />
         <Box
           sx={{
-            marginTop: 1,
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
+            width: '100%'
           }}
         >
-         {/* <Avatar sx={{ backgroundColor: '#C215AE', marginTop: 1 }}>
-            <LockOutlinedIcon />
-          </Avatar> */}
-          <Typography component="h1" variant="h5">
+          <Typography component="h1" variant="h5" sx={{ mb: 2 }}>
             Register
           </Typography>
-          <Box component="form" noValidate onSubmit={formik.handleSubmit} sx={{ mt: 2 }}>
+          <Box component="form" noValidate onSubmit={formik.handleSubmit} sx={{ 
+            width: '100%', 
+            maxWidth: '800px', // Limit maximum width
+            px: 2 // Add horizontal padding
+          }}>
           <Grid container spacing={2} sx={{ justifyContent: 'center' }}>
     <Grid item xs={4.5} mr={5} sx={gridItemStyle}>
       <TextField
@@ -535,24 +541,27 @@ const [snackbarSeverity, setSnackbarSeverity] = useState('success');
                 </Link>
               </Grid>
             </Grid>   
-            <Box sx={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
-                <Button
-                  type="submit"
-                  variant="contained"
-                  sx={{
-                    mt: 1,
-                    mb: 2,
-                    borderRadius: '50px',
-                    width: '30%',
-                    backgroundColor: '#C215AE',
-                    '&:hover': {
-                      backgroundColor: 'purple',
-                    },
-                  }}
-                >
-                  Submit
-                </Button>
-             </Box>
+            <Box sx={{ 
+              display: 'flex', 
+              justifyContent: 'center', 
+              width: '100%', 
+              mt: 2 // Added margin top
+            }}>
+              <Button
+                type="submit"
+                variant="contained"
+                sx={{
+                  borderRadius: '50px',
+                  width: '200px', // Fixed width instead of percentage
+                  backgroundColor: '#C215AE',
+                  '&:hover': {
+                    backgroundColor: 'purple',
+                  },
+                }}
+              >
+                Submit
+              </Button>
+            </Box>
           </Box>
         </Box>
       </Container>

@@ -9,7 +9,6 @@ import Typography from '@mui/material/Typography';
 import MenuItem from '@mui/material/MenuItem';
 import Menu from '@mui/material/Menu';
 import AccountCircle from '@mui/icons-material/AccountCircle';
-import NotificationsIcon from '@mui/icons-material/Notifications';
 import Badge from '@mui/material/Badge';
 import Drawer from '@mui/material/Drawer';
 import List from '@mui/material/List';
@@ -31,7 +30,6 @@ import Button from '@mui/material/Button';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { logout } from '../../action/auth';
 import { fetchUserProfile } from '../../action/user';
-import { fetchNotifications, readNotification } from '../../action/notification';
 
 const drawerWidth = 120;
 
@@ -76,25 +74,20 @@ export function PrimarySearchAppBar(props) {
   const location = useLocation();
 
   const [anchorEl, setAnchorEl] = React.useState(null);
-  const [notificationAnchorEl, setNotificationAnchorEl] = React.useState(null);
   const [openProfileDialog, setOpenProfileDialog] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(true);
 
   const user = useSelector(state => state.user.profile);
-  const notifications = useSelector(state => state.user.notifications || []);
 
   const isMenuOpen = Boolean(anchorEl);
-  const isNotificationMenuOpen = Boolean(notificationAnchorEl);
 
   const menuId = 'primary-search-account-menu';
-  const notificationMenuId = 'primary-search-notification-menu';
 
   React.useEffect(() => {
     const loadData = async () => {
       try {
         await Promise.all([
           dispatch(fetchUserProfile()),
-          dispatch(fetchNotifications())
         ]);
       } finally {
         setIsLoading(false);
@@ -107,22 +100,14 @@ export function PrimarySearchAppBar(props) {
     setAnchorEl(event.currentTarget);
   };
 
-  const handleNotificationMenuOpen = (event) => {
-    setNotificationAnchorEl(event.currentTarget);
-  };
 
   const handleMenuClose = () => {
     setAnchorEl(null);
-    setNotificationAnchorEl(null);
   };
 
   const handleLogout = () => {
     dispatch(logout());
     navigate('/login');
-  };
-
-  const handleNotificationClick = (notificationId) => {
-    dispatch(readNotification(notificationId));
   };
 
   const handleProfileClick = () => {
@@ -154,35 +139,6 @@ export function PrimarySearchAppBar(props) {
     >
       <MenuItem onClick={handleProfileClick}>Profile</MenuItem>
       <MenuItem onClick={handleLogout}>Logout</MenuItem>
-    </Menu>
-  );
-
-   // Add renderNotificationMenu component
-   const renderNotificationMenu = (
-    <Menu
-      anchorEl={notificationAnchorEl}
-      anchorOrigin={{
-        vertical: 'top',
-        horizontal: 'right',
-      }}
-      id={notificationMenuId}
-      keepMounted
-      transformOrigin={{
-        vertical: 'top',
-        horizontal: 'right',
-      }}
-      open={isNotificationMenuOpen}
-      onClose={handleMenuClose}
-    >
-      {notifications.map((notification) => (
-        <MenuItem 
-          key={notification.id} 
-          onClick={() => handleNotificationClick(notification.id)}
-          style={{ backgroundColor: notification.read ? 'white' : '#f0f0f0' }}
-        >
-          {notification.message}
-        </MenuItem>
-      ))}
     </Menu>
   );
 
@@ -261,22 +217,27 @@ export function PrimarySearchAppBar(props) {
   <Box sx={{ display: 'flex' }}>
   <StyledAppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
     <Toolbar>
-      <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
-        {user?.institution_name || 'Management System'}
-      </Typography>
-      <IconButton
-        size="large"
-        aria-label="show new notifications"
-        color="inherit"
-        onClick={handleNotificationMenuOpen}
-        sx={{ mr: 2 }}
-      >
-        <Badge badgeContent={notifications.filter(n => !n.read).length} color="error">
-          <NotificationsIcon />
-        </Badge>
-      </IconButton>
+    <Typography 
+  variant="h6" 
+  noWrap 
+  component="div" 
+  sx={{ 
+    flexGrow: 1, 
+    display: 'flex', 
+    alignItems: 'center' 
+  }}
+>
+  <img 
+    src="/ams.png" 
+    alt="AMS Logo" 
+    style={{ 
+      height: '40px', 
+      marginRight: '10px' 
+    }} 
+  />
+</Typography>
       <Typography variant="subtitle1" sx={{ mr: 2 }}>
-        {user?.name} {user?.user_type && `(${user.user_type.replace('_', ' ')})`}
+        {user?.first_name} {user?.last_name} {user?.user_type && `(${user.user_type.replace('_', ' ')})`}
       </Typography>
       <IconButton
         size="large"
@@ -329,7 +290,6 @@ export function PrimarySearchAppBar(props) {
     {props.children}
   </Box>
   {renderMenu}
-  {renderNotificationMenu}
   {user && <ProfileDialog open={openProfileDialog} onClose={() => setOpenProfileDialog(false)} user={user} />}
 </Box>
 );
@@ -340,7 +300,7 @@ const ProfileDialog = ({ open, onClose, user }) => {
     <Dialog open={open} onClose={onClose}>
       <DialogTitle>User Profile</DialogTitle>
       <DialogContent>
-        <Typography variant="body1">Name: {user?.firstName} {user?.lastName}</Typography>
+        <Typography variant="body1">Name: {user?.first_name} {user?.last_name}</Typography>
         <Typography variant="body1">Email: {user?.email}</Typography>
       </DialogContent>
       <DialogActions>

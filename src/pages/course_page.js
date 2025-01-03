@@ -133,6 +133,7 @@ const CoursePage = () => {
   };
 
   const handleMenuOpen = (event, course) => {
+    event.stopPropagation();
     setAnchorEl(event.currentTarget);
     setMenuCourse(course);
   };
@@ -329,29 +330,31 @@ const CoursePage = () => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {filteredCourses.map((course) => (
-                  <TableRow
-                    key={course.id}
-                    sx={{ 
-                      '&:last-child td, &:last-child th': { border: 0 },
-                      '&:hover': { backgroundColor: '#f5f5f5', cursor: 'pointer'}
-                    }}
-                    onClick={() => handleCourseClick(course)}
-                  >
-                    <TableCell component="th" scope="row">
-                      {course.code}
-                    </TableCell>
-                    <TableCell>{course.name}</TableCell>
-                    <TableCell>{course.credits}</TableCell>
-                    <TableCell>{formatDate(course.created_at)}</TableCell>
-                    <TableCell align="right">
-                      <IconButton onClick={(event) => handleMenuOpen(event, course)}>
-                        <MoreVertIcon />
-                      </IconButton>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
+        {filteredCourses.map((course) => (
+          <TableRow
+            key={course.id}
+            sx={{ 
+              '&:last-child td, &:last-child th': { border: 0 },
+              '&:hover': { backgroundColor: '#f5f5f5', cursor: 'pointer'}
+            }}
+            onClick={() => handleCourseClick(course)}
+          >
+            <TableCell component="th" scope="row">
+              {course.code}
+            </TableCell>
+            <TableCell>{course.name}</TableCell>
+            <TableCell>{course.credits}</TableCell>
+            <TableCell>{formatDate(course.created_at)}</TableCell>
+            <TableCell align="right" onClick={(e) => e.stopPropagation()}> {/* Stop propagation at cell level */}
+              <IconButton 
+                onClick={(event) => handleMenuOpen(event, course)}
+              >
+                <MoreVertIcon />
+              </IconButton>
+            </TableCell>
+          </TableRow>
+        ))}
+      </TableBody>
             </Table>
           </TableContainer>
         </ContentBox>
@@ -511,12 +514,19 @@ const CoursePage = () => {
         anchorEl={anchorEl}
         open={Boolean(anchorEl)}
         onClose={handleMenuClose}
+        onClick={(e) => e.stopPropagation()} // Stop propagation for the menu itself
       >
-        <MenuItem onClick={() => handleEditCourse(menuCourse)}>
+        <MenuItem onClick={(e) => {
+          e.stopPropagation();
+          handleEditCourse(menuCourse);
+        }}>
           <SchoolIcon sx={{ mr: 1 }} />
           Edit
         </MenuItem>
-        <MenuItem onClick={handleDeleteCourse}>
+        <MenuItem onClick={(e) => {
+          e.stopPropagation();
+          handleDeleteCourse();
+        }}>
           <DeleteIcon sx={{ mr: 1 }} />
           Delete
         </MenuItem>

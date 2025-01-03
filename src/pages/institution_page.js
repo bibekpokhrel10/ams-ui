@@ -436,115 +436,12 @@ const Institution = () => {
         </DialogActions>
       </Dialog>
 
-      {/* Institution Admin Dialog */}
-      <Dialog
-        open={openAdminDialog}
-        onClose={() => setOpenAdminDialog(false)}
-        maxWidth="md"
-        fullWidth
-        PaperProps={{
-          style: {
-            backgroundColor: '#F8DEF5',
-            borderRadius: '20px',
-          },
-        }}
-      >
-        <DialogTitle>Manage Institution Admins</DialogTitle>
-        <DialogContent>
-          {/* Current Admins Table */}
-          <Typography variant="h6" sx={{ mt: 2, mb: 1 }}>Current Admins</Typography>
-          <TableContainer component={Paper} sx={{ borderRadius: '20px', mb: 4 }}>
-            <Table>
-              <TableHead>
-                <TableRow sx={{ backgroundColor: '#F8DEF5' }}>
-                  <TableCell>Name</TableCell>
-                  <TableCell>Email</TableCell>
-                  <TableCell>Added Date</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {adminsLoading ? (
-                  <TableRow>
-                    <TableCell colSpan={3} align="center">
-                      <CircularProgress size={24} sx={{ color: '#C215AE' }} />
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  admins.map((admin) => (
-                    <TableRow key={admin.id}>
-                      <TableCell>{admin.name}</TableCell>
-                      <TableCell>{admin.email}</TableCell>
-                      <TableCell>{formatDate(admin.created_at)}</TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </TableContainer>
-
-          {/* Add New Admin Section */}
-          <Typography variant="h6" sx={{ mt: 2, mb: 1 }}>Add New Admin</Typography>
-          <TableContainer component={Paper} sx={{ borderRadius: '20px' }}>
-            <Table>
-              <TableHead>
-                <TableRow sx={{ backgroundColor: '#F8DEF5' }}>
-                  <TableCell>Name</TableCell>
-                  <TableCell>Email</TableCell>
-                  <TableCell align="right">Action</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {usersLoading ? (
-                  <TableRow>
-                    <TableCell colSpan={3} align="center">
-                      <CircularProgress size={24} sx={{ color: '#C215AE' }} />
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  users
-                    .filter(user => !admins.some(admin => admin.id === user.id))
-                    .map((user) => (
-                      <TableRow key={user.id}>
-                        <TableCell>{user.name}</TableCell>
-                        <TableCell>{user.email}</TableCell>
-                        <TableCell align="right">
-                          <Button
-                            variant="contained"
-                            size="small"
-                            onClick={() => handleAddAdmin(user.id)}
-                            sx={{
-                              backgroundColor: '#C215AE',
-                              color: 'white',
-                              '&:hover': { backgroundColor: '#9E1188' }
-                            }}
-                          >
-                            Add
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))
-                )}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setOpenAdminDialog(false)} sx={{ color: '#C215AE' }}>
-            Close
-          </Button>
-        </DialogActions>
-      </Dialog>
-
       {/* Menu */}
       <Menu
         anchorEl={anchorEl}
         open={Boolean(anchorEl)}
         onClose={handleMenuClose}
       >
-        <MenuItem onClick={() => handleOpenAdminDialog(menuInstitution?.id)}>
-          <PersonIcon sx={{ mr: 1 }} />
-          Manage Admins
-        </MenuItem>
         <MenuItem onClick={handleDeleteInstitution} sx={{ color: 'error.main' }}>
           <DeleteIcon sx={{ mr: 1 }} />
           Delete

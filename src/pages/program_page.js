@@ -225,7 +225,7 @@ const ProgramPage = () => {
       try {
         const programPayload = {
           name: values.programName,
-          institution_id: institutionId,
+          institution_id: Number(institutionId),
         }
         // console.log("program payload :: ", programPayload);
         const response = await dispatch(createProgram(programPayload));
@@ -299,19 +299,26 @@ const ProgramPage = () => {
   return (
     <StyledContainer>
 <Container maxWidth="md" sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
-        <Box sx={{ alignSelf: 'flex-start', width: '100%', mb: 3 }}>
           {user.user_type === 'super_admin' && (          
+        <Box sx={{ alignSelf: 'flex-start', width: '100%', mb: 3 }}>
             <Breadcrumbs aria-label="breadcrumb">
             <Link color="inherit" href="/institutions" onClick={(e) => { e.preventDefault(); navigate('/institutions'); }}>
               Institutions
             </Link>
             <Typography color="text.primary">{institutionName}</Typography>
           </Breadcrumbs>
-          )}
           <Typography variant="h4" gutterBottom sx={{ color: '#C215AE', mt: 2 }}>
             Programs for {institutionName}
           </Typography>
         </Box>
+          )}
+          {user.user_type === 'institution_admin' && (          
+        <Box sx={{ alignSelf: 'flex-start', width: '100%', mb: 3 }}>
+          <Typography variant="h4" gutterBottom sx={{ color: '#C215AE', mt: 2 }}>
+            Programs
+          </Typography>
+        </Box>
+          )}
         <ContentBox>
           <Box sx={{ display: 'flex', mb: 2, width: '100%', justifyContent: 'space-between' }}>
             <TextField

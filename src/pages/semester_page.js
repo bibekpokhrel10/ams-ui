@@ -170,19 +170,16 @@ const SemesterPage = () => {
   const formik = useFormik({
     initialValues: {
       name: '',
-      year: '',
       timePeriod: '',
     },
     validationSchema: Yup.object({
       name: Yup.string().required('Required'),
-      year: Yup.string().required('Required'),
       timePeriod: Yup.string().required('Required'),
     }),
     onSubmit: async (values, { resetForm }) => {
       try {
         const semesterPayload = {
           name: values.name,
-          year: values.year,
           program_id: programId,
           time_period: values.timePeriod,
         }
@@ -208,12 +205,10 @@ const SemesterPage = () => {
   const editFormik = useFormik({
     initialValues: {
       name: selectedSemester ? selectedSemester.name : '',
-      year: selectedSemester ? selectedSemester.year : '',
       timePeriod: selectedSemester ? selectedSemester.time_period : '',
     },
     validationSchema: Yup.object({
       name: Yup.string().required('Required'),
-      year: Yup.string().required('Required'),
       timePeriod: Yup.string().required('Required'),
     }),
     onSubmit: async (values) => {
@@ -221,7 +216,6 @@ const SemesterPage = () => {
         const semesterPayload = {
           id: selectedSemester.id,
           name: values.name,
-          year: values.year,
           program_id: programId,
           time_period: values.timePeriod,
         }
@@ -247,7 +241,6 @@ const SemesterPage = () => {
     if (selectedSemester) {
       editFormik.setValues({
         name: selectedSemester.name,
-        year: selectedSemester.year,
         timePeriod: selectedSemester.time_period,
       });
     }
@@ -318,7 +311,6 @@ const SemesterPage = () => {
               <TableHead>
                 <TableRow sx={{ backgroundColor: '#F8DEF5' }}>
                   <TableCell sx={{ fontWeight: 'bold' }}>Name</TableCell>
-                  <TableCell sx={{ fontWeight: 'bold' }}>Year</TableCell>
                   <TableCell sx={{ fontWeight: 'bold' }}>Time Period</TableCell>
                   <TableCell sx={{ fontWeight: 'bold' }}>Created at</TableCell>
                   <TableCell align="right"></TableCell>
@@ -337,7 +329,6 @@ const SemesterPage = () => {
                     <TableCell component="th" scope="row">
                       {semester.name}
                     </TableCell>
-                    <TableCell>{semester.year}</TableCell>
                     <TableCell>{semester.time_period}</TableCell>
                     <TableCell>{formatDate(semester.created_at)}</TableCell>
                     <TableCell align="right">
@@ -391,20 +382,6 @@ const SemesterPage = () => {
                 </InputAdornment>
               ),
             }}
-          />
-          <TextField
-            margin="dense"
-            id="year"
-            name="year"
-            label="Year"
-            type="text"
-            fullWidth
-            variant="outlined"
-            value={formik.values.year}
-            onChange={formik.handleChange}
-            error={formik.touched.year && Boolean(formik.errors.year)}
-            helperText={formik.touched.year && formik.errors.year}
-            sx={textfieldStyle}
           />
           <TextField
             margin="dense"
@@ -466,20 +443,6 @@ const SemesterPage = () => {
                 </InputAdornment>
               ),
             }}
-          />
-          <TextField
-            margin="dense"
-            id="year"
-            name="year"
-            label="Year"
-            type="text"
-            fullWidth
-            variant="outlined"
-            value={editFormik.values.year}
-            onChange={editFormik.handleChange}
-            error={editFormik.touched.year && Boolean(editFormik.errors.year)}
-            helperText={editFormik.touched.year && editFormik.errors.year}
-            sx={textfieldStyle}
           />
           <TextField
             margin="dense"

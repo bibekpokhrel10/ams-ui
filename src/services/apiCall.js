@@ -178,7 +178,7 @@ export const deleteClassAPI = (classId, token) => {
 }
 
 export const getInstructorsAPI = (institutionId, token) => {
-  return axios.get(`${process.env.REACT_APP_API}/users?type=teacher&institution_id=${institutionId}`, {
+  return axios.get(`${process.env.REACT_APP_API}/users?user_type=teacher&institution_id=${institutionId}`, {
     headers: { "Authorization": `Bearer ${token}` }
   });
 }
@@ -381,7 +381,7 @@ export const getClassEnrolledStudentsAPI = (classId, params, token) => {
 
 
 export const getInstructorClassesAPI = (instructorId, token) => {
-  return axios.get(`${process.env.REACT_APP_API}/classes`, {
+  return axios.get(`${process.env.REACT_APP_API}/classes?instructor_id=${instructorId}`, {
     headers: { Authorization: `Bearer ${token}` }
   });
 };
@@ -426,4 +426,25 @@ export const addInstitutionAdminAPI = (institutionId, userId, token) => {
   });
 };
 
+export const getTeacherClassAttendanceAPI = (classId, token) => {
+  return axios.get(`${process.env.REACT_APP_API}/attendances/class/${classId}/teachers`, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+};
+
+export const getStudentClassAttendanceAPI = (classId, token) => {
+  return axios.get(`${process.env.REACT_APP_API}/attendances/class/${classId}/students`, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+};
+
+export const sendAttendanceAlertAPI = (user_type,threshold, token) => {
+  return axios.post(`${process.env.REACT_APP_API}/attendances/send-alerts`, {
+    user_type: user_type,
+    threshold: threshold
+  },
+  {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+};
 

@@ -36,6 +36,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import { useNavigate } from 'react-router-dom';
 import AssignmentTurnedInIcon from '@mui/icons-material/AssignmentTurnedIn';
 import { fetchInstructorClasses, fetchClassStudents } from '../action/class';
+import { fetchUserProfile } from '../action/user';
 
 
 const StyledContainer = styled(Box)(({ theme }) => ({
@@ -114,11 +115,12 @@ const InstructorClassPage = () => {
     const [rowsPerPage, setRowsPerPage] = useState(10);
     
     // Pagination states for students
+    const user = useSelector(state => state.user.profile);
     const [studentPage, setStudentPage] = useState(0);
     const [studentRowsPerPage, setStudentRowsPerPage] = useState(10);
     const [totalStudents, setTotalStudents] = useState(0);
   
-    const instructorId = useSelector(state => state.auth.user?.id);
+    const instructorId = user.id;
     const classes = useSelector(state => state.instructorClasses.list || []);
     const [students, setStudents] = useState([]);
   

@@ -14,6 +14,7 @@ import AttendancePage from "../pages/attendance_page";
 import ProgramEnrollmentPage from "../pages/program_enrollment_page";
 import ClassEnrollmentPage from "../pages/class_enrollment_page";
 import InstructorClassPage from "../pages/instructor_class_page";
+import ClassAttendanceDetail from "../pages/class_attendance_page";
 
 function Routing() {
   return (
@@ -35,6 +36,7 @@ function Routing() {
           <Route path="/classes/enrollment" element={<ClassEnrollmentPage />} />
           <Route path="/instructor/classes" element={<InstructorClassPage />} />
           <Route path="/institutions/:id/users" element={<User />} />
+          <Route path="/class/:id" element={<ClassAttendanceDetail />} />
         </Route>
       </Routes>
     </Router>

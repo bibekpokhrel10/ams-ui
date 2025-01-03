@@ -12,24 +12,34 @@ import {
   TableHead, 
   TableRow, 
   TableCell, 
+  DialogActions,
+  DialogContent,
+  DialogTitle,
   TableBody,
-  IconButton
+  Slider,
+  Button,
+  Dialog,
+  Snackbar,
 } from '@mui/material';
 import { styled } from '@mui/system';
 import { useDispatch } from 'react-redux';
 import { 
-  BookOpen, 
+  GraduationCap, 
   Users, 
   Calendar, 
-  GraduationCap,
+  BookOpen,
   User,
-  BookOpen as ClassIcon
+  School,
+  BookMarked,
+  Bell,
 } from 'lucide-react';
 import { fetchDashboardData } from '../action/dashboard';
 import { fetchUserProfile } from '../action/user';
 import { useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import { sendAttendanceAlert } from '../action/attendance';
 
-// Styled Components
+// Styled Components remain the same...
 const StyledContainer = styled(Box)(({ theme }) => ({
   backgroundColor: '#F8DEF5',
   minHeight: '100vh',
@@ -60,6 +70,17 @@ const StatCard = styled(Paper)(({ theme }) => ({
   }
 }));
 
+const AlertButton = styled(Button)(({ theme }) => ({
+  backgroundColor: '#C215AE',
+  color: 'white',
+  borderRadius: '25px',
+  padding: '8px 24px',
+  '&:hover': {
+    backgroundColor: '#A11290',
+  }
+}));
+
+
 const ProgressBar = ({ value }) => (
   <Box 
     sx={{ 
@@ -82,29 +103,51 @@ const ProgressBar = ({ value }) => (
   </Box>
 );
 
+
 export const Dashboard = () => {
-  const dispatch = useDispatch();
-  const [dashboardData, setDashboardData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const user = useSelector(state => state.user.profile);
+    const dispatch = useDispatch();
+    const navigate = useNavigate();
+    const [dashboardData, setDashboardData] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const user = useSelector(state => state.user.profile);
+    const [snackbarMessage, setSnackbarMessage] = useState('');
+    const [snackbarSeverity, setSnackbarSeverity] = useState('success');
+    const [openSnackbar, setOpenSnackbar] = useState(false);
+    // New state for alert dialog
+    const [alertDialogOpen, setAlertDialogOpen] = useState(false);
+    const [threshold, setThreshold] = useState(70);
+    const [sendingAlert, setSendingAlert] = useState(false);
+
+  const handleClassClick = (classId) => {
+    navigate(`/class/${classId}`);
+  };
   
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // First, fetch user profile
         const userProfileResponse = await dispatch(fetchUserProfile());
         
-        // Check if user profile is successfully fetched
         if (userProfileResponse.success && userProfileResponse.data) {
           const userType = userProfileResponse.data.user_type;
           
-          // Now fetch dashboard data with the user type
           setLoading(true);
           const dashboardResponse = await dispatch(fetchDashboardData(userType));
           
           if (dashboardResponse.success) {
-            setDashboardData(dashboardResponse.data);
+            if (userType === 'super_admin' || userType === 'institution_admin') {
+              const filteredData = { ...dashboardResponse.data };
+              if (filteredData[userType] && filteredData[userType].stats) {
+                const { stats } = filteredData[userType];
+                const filteredStats = Object.fromEntries(
+                  Object.entries(stats).filter(([key]) => !key.toLowerCase().includes('attendance'))
+                );
+                filteredData[userType].stats = filteredStats;
+              }
+              setDashboardData(filteredData);
+            } else {
+              setDashboardData(dashboardResponse.data);
+            }
             setError(null);
           } else {
             throw new Error(dashboardResponse.error || 'Failed to fetch dashboard data');
@@ -122,6 +165,80 @@ export const Dashboard = () => {
   
     fetchData();
   }, [dispatch]); 
+
+  const handleOpenAlertDialog = () => {
+    setAlertDialogOpen(true);
+  };
+
+  const handleCloseAlertDialog = () => {
+    setAlertDialogOpen(false);
+  };
+
+  const handleSendAlert = async () => {
+    try {
+      setSendingAlert(true);
+      const response = await dispatch(sendAttendanceAlert({
+        user_type: user.user_type,
+        threshold: threshold
+      }));
+      
+      if (response.success) {
+        setError(null);
+        setSnackbarMessage('Alert sent successfully!');
+        setSnackbarSeverity('success');
+        setOpenSnackbar(true);
+        handleCloseAlertDialog();
+      } else {
+        throw new Error(response.error || 'Failed to send alert');
+      }
+    } catch (err) {
+      setError('Failed to send alert: ' + err.message);
+      setSnackbarMessage('Failed to send alert');
+      setSnackbarSeverity('error');
+      setOpenSnackbar(true); 
+    } finally {
+      setSendingAlert(false);
+    }
+  };
+
+  const renderAlertDialog = () => (
+    <Dialog open={alertDialogOpen} onClose={handleCloseAlertDialog}>
+      <DialogTitle sx={{ color: '#C215AE' }}>Send Attendance Alert</DialogTitle>
+      <DialogContent>
+        <Typography gutterBottom>
+          Set attendance threshold percentage:
+        </Typography>
+        <Slider
+          value={threshold}
+          onChange={(_, newValue) => setThreshold(newValue)}
+          aria-labelledby="threshold-slider"
+          valueLabelDisplay="auto"
+          min={0}
+          max={100}
+          sx={{
+            color: '#C215AE',
+            '& .MuiSlider-thumb': {
+              '&:hover, &.Mui-focusVisible': {
+                boxShadow: '0 0 0 8px rgba(194, 21, 174, 0.16)',
+              },
+            },
+          }}
+        />
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={handleCloseAlertDialog}>Cancel</Button>
+        <Button 
+          onClick={handleSendAlert}
+          disabled={sendingAlert}
+          sx={{ color: '#C215AE' }}
+        >
+          {sendingAlert ? 'Sending...' : 'Send Alert'}
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
+
+
   const renderStats = (stats, icons) => (
     <Grid container spacing={3}>
       {Object.entries(stats).map(([key, value], index) => (
@@ -144,7 +261,7 @@ export const Dashboard = () => {
                 p: 1.5 
               }}
             >
-              {React.createElement(icons[index], { 
+              {icons[index] && React.createElement(icons[index], { 
                 color: '#C215AE', 
                 size: 24 
               })}
@@ -167,13 +284,23 @@ export const Dashboard = () => {
     if (error) {
       return <Alert severity="error">{error}</Alert>;
     }
-    console.log("dashboardData :: ", dashboardData);
-    console.log("user type :: ", user);
+
     if (!dashboardData || !dashboardData[user.user_type]) {
       return <Alert severity="info">No data available for this user type</Alert>;
     }
     
     const userData = dashboardData[user.user_type];
+
+
+    const renderAlertButton = () => (
+      <AlertButton
+        startIcon={<Bell size={20} />}
+        onClick={handleOpenAlertDialog}
+        sx={{ mb: 3 }}
+      >
+        Send Attendance Alert
+      </AlertButton>
+    );
 
     const renderDetailSection = (title, items, keyName, valueKey = 'attendance') => (
       <ContentBox sx={{ mt: 3, p: 3 }}>
@@ -182,15 +309,18 @@ export const Dashboard = () => {
         </Typography>
         <TableContainer>
           <Table>
-            <TableHead sx={{ backgroundColor: '#F8DEF5' }}>
+           
+               <TableHead sx={{ backgroundColor: '#F8DEF5' }}>
               <TableRow>
                 <TableCell sx={{ fontWeight: 'bold' }}>{keyName}</TableCell>
+                {user.user_type != 'super_admin' && (
                 <TableCell sx={{ fontWeight: 'bold' }} align="right">Percentage</TableCell>
+                )}
               </TableRow>
             </TableHead>
             <TableBody>
               {items.map((item) => (
-                <TableRow key={item.course_name || item.name} hover>
+                <TableRow key={item.course_name || item.name} hover onClick={() => handleClassClick(item.class_id)} sx={{ cursor: 'pointer' }}>
                   <TableCell>
                     {item.course_name || item.name}
                     {item.students ? ` (${item.students} students)` : ''}
@@ -198,6 +328,9 @@ export const Dashboard = () => {
                     {item.program_name ? ` (${item.program_name})` : ''}
                     {item.instructor_name ? ` - ${item.instructor_name}` : ''}
                   </TableCell>
+                  {user.user_type != 'super_admin' && (
+                    
+                  
                   <TableCell align="right">
                     <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
                       <Typography 
@@ -215,6 +348,7 @@ export const Dashboard = () => {
                       </Box>
                     </Box>
                   </TableCell>
+                  )}
                 </TableRow>
               ))}
             </TableBody>
@@ -228,37 +362,43 @@ export const Dashboard = () => {
         return (
           <>
             {renderStats(userData.stats, [
-              GraduationCap,
+              School,
               Users,
               User,
-              BookOpen
+              BookMarked
             ])}
             {renderDetailSection('Institutions Overview', userData.institutions_list, 'Institution')}
           </>
         );
 
-      case 'institution_admin':
+        case 'institution_admin':
         return (
           <>
+            <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+              {renderAlertButton()}
+            </Box>
             {renderStats(userData.stats, [
               Users,
               User,
-              BookOpen,
-              Calendar
+              BookMarked
             ])}
-            {renderDetailSection('Monthly Attendance Trends', userData.attendance_trends, 'Month')}
+            {renderAlertDialog()}
           </>
         );
 
       case 'teacher':
         return (
           <>
+            <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+              {renderAlertButton()}
+            </Box>
             {renderStats(userData.stats, [
-             ClassIcon,
-             Users,
-             Calendar
+              BookOpen,
+              Users,
+              Calendar
             ])}
             {renderDetailSection('Class Overview', userData.classes, 'Class', 'attendance')}
+            {renderAlertDialog()}
           </>
         );
 
@@ -271,7 +411,6 @@ export const Dashboard = () => {
               GraduationCap
             ])}
             {renderDetailSection('Courses', userData.classes, 'Course', 'class_attendance')}
-            {renderDetailSection('Monthly Attendance', userData.monthly_attendance, 'Month', 'attendance')}
           </>
         );
 
@@ -296,6 +435,21 @@ export const Dashboard = () => {
         
         {renderDashboardContent()}
       </Container>
+      <Snackbar
+        open={openSnackbar}
+        autoHideDuration={3000}
+        onClose={() => setOpenSnackbar(false)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert 
+          onClose={() => setOpenSnackbar(false)} 
+          severity={snackbarSeverity}
+          variant="filled"
+          sx={{ width: '100%', borderRadius: '10px' }}
+        >
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
     </StyledContainer>
   );
 };

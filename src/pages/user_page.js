@@ -139,7 +139,7 @@ const User = () => {
     }
     dispatch(fetchInstitutions()).then(response => {
       if (response.success) {
-        setInstitutions(response.data.data);
+        setInstitutions(response.data.data || []);
       }
     });
   }, [dispatch]);
@@ -148,7 +148,7 @@ const User = () => {
     if (selectedInstitution) {
       dispatch(fetchPrograms(selectedInstitution)).then(response => {
         if (response.success) {
-          setPrograms(response.data);
+          setPrograms(response.data || []);
         }
       });
     }
@@ -156,13 +156,13 @@ const User = () => {
 
   useEffect(() => {
     if(userProfile.user_type === 'super_admin'){
-    dispatch(fetchUsers());
+    dispatch(fetchUsers() || []);
     }
   }, [dispatch]);
 
   useEffect(() => {
     fetchPaginatedUsers();
-  }, [dispatch, page, rowsPerPage, sortColumn, sortDirection, searchTerm]);
+  }, [dispatch, page, rowsPerPage, sortColumn, sortDirection, searchTerm, filterInstitution]);
 
   const fetchPaginatedUsers = () => {
     
@@ -174,6 +174,10 @@ const User = () => {
       query: searchTerm,
      
     };
+
+    if (filterInstitution) {
+      listRequest.institution_id = filterInstitution;
+    }
 
     if(paramId != null && paramId.id != null && paramId.id != undefined){
       listRequest.institution_id = paramId.id
@@ -395,13 +399,14 @@ const User = () => {
           ),
         }}
       />
+      {userProfile.user_type === 'super_admin' && (  
       <FormControl sx={{ minWidth: 200 }}>
         <InputLabel>Institution</InputLabel>
         <Select
           value={filterInstitution}
           onChange={(e) => {
             setFilterInstitution(e.target.value);
-            setPage(0);
+            setPage(0); // Reset to first page when changing institution
           }}
           label="Institution"
           size="small"
@@ -414,6 +419,7 @@ const User = () => {
           ))}
         </Select>
       </FormControl>
+      )}
     </Box>
   );
 
@@ -649,19 +655,16 @@ return (
           },
         }}
       >
-        <DialogTitle>{`${selectedUser?.firstName} ${selectedUser?.lastName}`}</DialogTitle>
+        <DialogTitle>{`${selectedUser?.first_name} ${selectedUser?.last_name}`}</DialogTitle>
         <DialogContent>
           <Typography variant="body1" paragraph>
             <strong>Email:</strong> {selectedUser?.email}
           </Typography>
           <Typography variant="body1" paragraph>
-            <strong>Role:</strong> {selectedUser?.role}
+            <strong>User Type:</strong> {selectedUser?.user_type}
           </Typography>
           <Typography variant="body1" paragraph>
-            <strong>Status:</strong> {selectedUser?.isActive ? 'Active' : 'Inactive'}
-          </Typography>
-          <Typography variant="body1">
-            <strong>Created at:</strong> {formatDate(selectedUser?.createdAt)}
+            <strong>Status:</strong> {selectedUser?.is_active ? 'Active' : 'Inactive'}
           </Typography>
         </DialogContent>
         <DialogActions>
